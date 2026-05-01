@@ -12,7 +12,6 @@ import { logger } from './config/logger.js';
 import swaggerSpec from './config/swagger.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import {
-  authLimiter,
   globalLimiter,
   inviteLimiter,
   searchLimiter,
@@ -60,7 +59,6 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(sanitizeRequest);
 app.use('/api', globalLimiter);
 
-app.post(['/api/auth/login', '/api/auth/register'], authLimiter);
 app.post('/api/invitations', inviteLimiter);
 app.use('/api/uploads', uploadLimiter);
 app.use('/api/search', searchLimiter);
