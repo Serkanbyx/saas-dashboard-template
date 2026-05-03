@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import {
+  getMembersOverview,
   leaveOrg,
   listMembers,
   removeMember,
@@ -19,6 +20,7 @@ import {
 const router = Router();
 
 router.get('/', protect, tenantContext, requirePermission('members:read'), listMembers);
+router.get('/overview', protect, tenantContext, requirePermission('members:read'), getMembersOverview);
 router.delete('/me', protect, tenantContext, leaveOrg);
 router.patch(
   '/:membershipId',

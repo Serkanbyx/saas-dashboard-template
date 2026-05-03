@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import Invitation from '../models/Invitation.js';
 import Membership from '../models/Membership.js';
 import Organization from '../models/Organization.js';
 import User from '../models/User.js';
@@ -10,6 +11,38 @@ const createHttpError = (statusCode, message) => Object.assign(new Error(message
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const isSameId = (left, right) => left?.toString() === right?.toString();
+
+const createEmptyMemberCounts = () => ({
+  total: 0,
+  owners: 0,
+  admins: 0,
+  members: 0,
+  pending: 0,
+});
+
+const normalizeMemberCounts = (roleCounts, pending) =>
+  roleCounts.reduce(
+    (counts, roleCount) => {
+      const roleKey = `${roleCount._id}s`;
+      if (roleKey in counts) {
+        counts[roleKey] = roleCount.count;
+      }
+
+      counts.total += roleCount.count;
+      return counts;
+    },
+    { ...createEmptyMemberCounts(), pending },
+  );
+
+const markExpiredPendingInvitations = (orgId) =>
+  Invitation.updateMany(
+    {
+      orgId,
+      status: 'pending',
+      expiresAt: { $lte: new Date() },
+    },
+    { status: 'expired' },
+  );
 
 const importOptionalModel = async (modelPath) => {
   try {
@@ -125,6 +158,44 @@ export const listMembers = async (req, res, next) => {
           limit,
           total,
           totalPages: Math.ceil(total / limit),
+        },
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getMembersOverview = async (req, res, next) => {
+  try {
+    await markExpiredPendingInvitations(req.orgId);
+
+    const invitationFilter = { orgId: req.orgId, status: 'pending' };
+
+    const [members, pendingInvitations, roleCounts, pendingCount] = await Promise.all([
+      Membership.find({ orgId: req.orgId })
+        .populate({ path: 'userId', select: 'name email avatar' })
+        .sort({ role: 1, joinedAt: 1 }),
+      Invitation.find(invitationFilter)
+        .select('-token -__v')
+        .populate({ path: 'invitedBy', select: 'name email avatar' })
+        .sort({ createdAt: -1 }),
+      Membership.aggregate([
+        { $match: { orgId: req.orgId } },
+        { $group: { _id: '$role', count: { $sum: 1 } } },
+      ]),
+      Invitation.countDocuments(invitationFilter),
+    ]);
+
+    return res.json({
+      success: true,
+      data: {
+        members,
+        pendingInvitations,
+        counts: normalizeMemberCounts(roleCounts, pendingCount),
+        seats: {
+          used: req.org.seatsUsed,
+          limit: req.org.seatLimit,
         },
       },
     });
