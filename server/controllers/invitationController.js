@@ -5,42 +5,12 @@ import Invitation from '../models/Invitation.js';
 import Membership from '../models/Membership.js';
 import Organization from '../models/Organization.js';
 import User from '../models/User.js';
+import { logActivity } from '../services/activityService.js';
 import { sendInvitationEmail, sendWelcomeEmail } from '../services/emailService.js';
 import { emitToOrg } from '../services/socketService.js';
 
 const createHttpError = (statusCode, message) => Object.assign(new Error(message), { statusCode });
 const invitationDurationMs = 7 * 24 * 60 * 60 * 1000;
-
-const importOptionalModel = async (modelPath) => {
-  try {
-    const modelModule = await import(modelPath);
-    return modelModule.default;
-  } catch (error) {
-    if (error.code === 'ERR_MODULE_NOT_FOUND') {
-      return null;
-    }
-
-    throw error;
-  }
-};
-
-const logInvitationActivity = async ({ orgId, userId, action, metadata = {}, session }) => {
-  const ActivityLog = await importOptionalModel('../models/ActivityLog.js');
-
-  if (!ActivityLog) return;
-
-  await ActivityLog.create(
-    [
-      {
-        orgId,
-        userId,
-        action,
-        metadata,
-      },
-    ],
-    { session },
-  );
-};
 
 const getExpirationDate = () => new Date(Date.now() + invitationDurationMs);
 
@@ -153,18 +123,18 @@ export const createInvitation = async (req, res, next) => {
         ],
         { session },
       );
+    });
 
-      await logInvitationActivity({
-        orgId: req.orgId,
-        userId: req.user._id,
-        action: 'invitation.created',
-        metadata: {
-          invitationId: invitation._id,
-          email: invitation.email,
-          role: invitation.role,
-        },
-        session,
-      });
+    await logActivity({
+      orgId: req.orgId,
+      actorId: req.user._id,
+      action: 'member.invited',
+      targetType: 'invitation',
+      targetId: invitation._id,
+      metadata: {
+        email: invitation.email,
+        role: invitation.role,
+      },
     });
 
     await sendInvitationEmail({
@@ -240,12 +210,13 @@ export const revokeInvitation = async (req, res, next) => {
     invitation.status = 'revoked';
     await invitation.save();
 
-    await logInvitationActivity({
+    await logActivity({
       orgId: req.orgId,
-      userId: req.user._id,
+      actorId: req.user._id,
       action: 'invitation.revoked',
+      targetType: 'invitation',
+      targetId: invitation._id,
       metadata: {
-        invitationId: invitation._id,
         email: invitation.email,
         role: invitation.role,
       },
@@ -276,12 +247,13 @@ export const resendInvitation = async (req, res, next) => {
       expiresAt: invitation.expiresAt,
     });
 
-    await logInvitationActivity({
+    await logActivity({
       orgId: req.orgId,
-      userId: req.user._id,
+      actorId: req.user._id,
       action: 'invitation.resent',
+      targetType: 'invitation',
+      targetId: invitation._id,
       metadata: {
-        invitationId: invitation._id,
         email: invitation.email,
         role: invitation.role,
       },
@@ -404,18 +376,18 @@ export const acceptInvitation = async (req, res, next) => {
       invitation.acceptedAt = new Date();
       invitation.acceptedByUserId = req.user._id;
       await invitation.save({ session });
+    });
 
-      await logInvitationActivity({
-        orgId: invitation.orgId,
-        userId: req.user._id,
-        action: 'invitation.accepted',
-        metadata: {
-          invitationId: invitation._id,
-          membershipId: membership._id,
-          role: membership.role,
-        },
-        session,
-      });
+    await logActivity({
+      orgId: invitation.orgId,
+      actorId: req.user._id,
+      action: 'member.joined',
+      targetType: 'membership',
+      targetId: membership._id,
+      metadata: {
+        invitationId: invitation._id,
+        role: membership.role,
+      },
     });
 
     await sendWelcomeEmail({

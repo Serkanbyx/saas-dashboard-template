@@ -3,6 +3,7 @@ import Invitation from '../models/Invitation.js';
 import Membership from '../models/Membership.js';
 import Organization from '../models/Organization.js';
 import User from '../models/User.js';
+import { logActivity } from '../services/activityService.js';
 import { emitToOrg } from '../services/socketService.js';
 import { ORG_ROLES } from '../utils/constants.js';
 
@@ -43,37 +44,6 @@ const markExpiredPendingInvitations = (orgId) =>
     },
     { status: 'expired' },
   );
-
-const importOptionalModel = async (modelPath) => {
-  try {
-    const modelModule = await import(modelPath);
-    return modelModule.default;
-  } catch (error) {
-    if (error.code === 'ERR_MODULE_NOT_FOUND') {
-      return null;
-    }
-
-    throw error;
-  }
-};
-
-const logMembershipActivity = async ({ orgId, userId, action, metadata = {}, session }) => {
-  const ActivityLog = await importOptionalModel('../models/ActivityLog.js');
-
-  if (!ActivityLog) return;
-
-  await ActivityLog.create(
-    [
-      {
-        orgId,
-        userId,
-        action,
-        metadata,
-      },
-    ],
-    { session },
-  );
-};
 
 const getMembershipInOrg = async (membershipId, orgId, session) => {
   const query = Membership.findOne({ _id: membershipId, orgId });
@@ -220,12 +190,13 @@ export const updateMemberRole = async (req, res, next) => {
     membership.role = role;
     await membership.save();
 
-    await logMembershipActivity({
+    await logActivity({
       orgId: req.orgId,
-      userId: req.user._id,
-      action: 'membership.role_updated',
+      actorId: req.user._id,
+      action: 'member.role_changed',
+      targetType: 'membership',
+      targetId: membership._id,
       metadata: {
-        membershipId: membership._id,
         targetUserId: membership.userId,
         previousRole,
         role,
@@ -257,18 +228,18 @@ export const removeMember = async (req, res, next) => {
 
       await Membership.deleteOne({ _id: removedMembership._id }).session(session);
       await Organization.updateOne({ _id: req.orgId }, { $inc: { seatsUsed: -1 } }).session(session);
+    });
 
-      await logMembershipActivity({
-        orgId: req.orgId,
-        userId: req.user._id,
-        action: 'membership.removed',
-        metadata: {
-          membershipId: removedMembership._id,
-          targetUserId: removedMembership.userId,
-          role: removedMembership.role,
-        },
-        session,
-      });
+    await logActivity({
+      orgId: req.orgId,
+      actorId: req.user._id,
+      action: 'member.removed',
+      targetType: 'membership',
+      targetId: removedMembership._id,
+      metadata: {
+        targetUserId: removedMembership.userId,
+        role: removedMembership.role,
+      },
     });
 
     emitToOrg(req.orgId, 'membership:removed', { membershipId: removedMembership._id });
@@ -292,14 +263,15 @@ export const leaveOrg = async (req, res, next) => {
 
       await Membership.deleteOne({ _id: req.membership._id }).session(session);
       await Organization.updateOne({ _id: req.orgId }, { $inc: { seatsUsed: -1 } }).session(session);
+    });
 
-      await logMembershipActivity({
-        orgId: req.orgId,
-        userId: req.user._id,
-        action: 'membership.left',
-        metadata: { membershipId: req.membership._id },
-        session,
-      });
+    await logActivity({
+      orgId: req.orgId,
+      actorId: req.user._id,
+      action: 'member.left',
+      targetType: 'membership',
+      targetId: req.membership._id,
+      metadata: { userId: req.user._id },
     });
 
     emitToOrg(req.orgId, 'membership:left', { membershipId: req.membership._id, userId: req.user._id });
@@ -350,18 +322,19 @@ export const transferOwnership = async (req, res, next) => {
         currentOwnerMembership.save({ session }),
         Organization.updateOne({ _id: req.orgId }, { ownerId: newOwnerMembership.userId }).session(session),
       ]);
+    });
 
-      await logMembershipActivity({
-        orgId: req.orgId,
-        userId: req.user._id,
-        action: 'membership.ownership_transferred',
-        metadata: {
-          previousOwnerId: req.user._id,
-          newOwnerId: newOwnerMembership.userId,
-          membershipId: newOwnerMembership._id,
-        },
-        session,
-      });
+    await logActivity({
+      orgId: req.orgId,
+      actorId: req.user._id,
+      action: 'ownership.transferred',
+      targetType: 'organization',
+      targetId: req.orgId,
+      metadata: {
+        previousOwnerId: req.user._id,
+        newOwnerId: newOwnerMembership.userId,
+        membershipId: newOwnerMembership._id,
+      },
     });
 
     emitToOrg(req.orgId, 'membership:ownership_transferred', {

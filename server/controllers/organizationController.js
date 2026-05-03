@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Membership from '../models/Membership.js';
 import Organization from '../models/Organization.js';
+import { logActivity } from '../services/activityService.js';
 import { generateUniqueSlug } from '../utils/generateSlug.js';
 
 const createHttpError = (statusCode, message) => Object.assign(new Error(message), { statusCode });
@@ -26,24 +27,6 @@ const importOptionalModel = async (modelPath) => {
 
     throw error;
   }
-};
-
-const logOrgActivity = async ({ orgId, userId, action, metadata = {}, session }) => {
-  const ActivityLog = await importOptionalModel('../models/ActivityLog.js');
-
-  if (!ActivityLog) return;
-
-  await ActivityLog.create(
-    [
-      {
-        orgId,
-        userId,
-        action,
-        metadata,
-      },
-    ],
-    { session },
-  );
 };
 
 const cascadeSoftDeleteOrgData = async ({ orgId, session }) => {
@@ -105,14 +88,15 @@ export const createOrg = async (req, res, next) => {
         ],
         { session },
       );
+    });
 
-      await logOrgActivity({
-        orgId: organization._id,
-        userId: req.user._id,
-        action: 'organization.created',
-        metadata: { name: organization.name },
-        session,
-      });
+    await logActivity({
+      orgId: organization._id,
+      actorId: req.user._id,
+      action: 'org.created',
+      targetType: 'organization',
+      targetId: organization._id,
+      metadata: { name: organization.name },
     });
 
     return res.status(201).json({ success: true, data: { organization } });
@@ -157,14 +141,17 @@ export const getOrgById = async (req, res, next) => {
 export const updateOrg = async (req, res, next) => {
   try {
     const updates = pickEditableOrgFields(req.body);
+    const isLogoChanged = Object.hasOwn(updates, 'logo') && updates.logo !== req.org.logo;
 
     Object.assign(req.org, updates);
     await req.org.save();
 
-    await logOrgActivity({
+    await logActivity({
       orgId: req.org._id,
-      userId: req.user._id,
-      action: 'organization.updated',
+      actorId: req.user._id,
+      action: isLogoChanged ? 'org.logo_changed' : 'org.updated',
+      targetType: 'organization',
+      targetId: req.org._id,
       metadata: { fields: Object.keys(updates) },
     });
 
@@ -188,6 +175,15 @@ export const deleteOrg = async (req, res, next) => {
       await req.org.save({ session });
 
       await cascadeSoftDeleteOrgData({ orgId: req.org._id, session });
+    });
+
+    await logActivity({
+      orgId: req.org._id,
+      actorId: req.user._id,
+      action: 'org.deleted',
+      targetType: 'organization',
+      targetId: req.org._id,
+      metadata: { name: req.org.name },
     });
 
     return res.json({ success: true, message: 'Organization deleted successfully' });
