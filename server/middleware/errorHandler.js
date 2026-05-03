@@ -4,6 +4,7 @@ import { logger } from '../config/logger.js';
 const getStatusCode = (err) => {
   if (err.statusCode || err.status) return err.statusCode || err.status;
   if (err.name === 'ValidationError' || err.name === 'CastError' || err.code === 11000) return 400;
+  if (err.name === 'MulterError') return 400;
   return 500;
 };
 
@@ -15,6 +16,7 @@ const getSafeMessage = (err, statusCode) => {
   if (err.name === 'ValidationError') return 'Validation failed';
   if (err.name === 'CastError') return 'Invalid resource identifier';
   if (err.code === 11000) return 'Duplicate resource';
+  if (err.name === 'MulterError') return err.message || 'Upload failed';
 
   return err.message || (statusCode >= 500 ? 'Server error' : 'Request failed');
 };

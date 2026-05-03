@@ -15,7 +15,6 @@ import {
   globalLimiter,
   searchLimiter,
   superAdminLimiter,
-  uploadLimiter,
 } from './middleware/rateLimiters.js';
 import { requestId } from './middleware/requestId.js';
 import { sanitizeRequest } from './middleware/sanitize.js';
@@ -58,7 +57,6 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(sanitizeRequest);
 app.use('/api', globalLimiter);
 
-app.use('/api/uploads', uploadLimiter);
 app.use('/api/search', searchLimiter);
 app.use('/api/super-admin', superAdminLimiter);
 
