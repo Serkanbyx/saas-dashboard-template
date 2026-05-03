@@ -35,6 +35,7 @@ Thumbs.db
 # Misc
 .cache/
 .tmp/
+tmp/
 *.pem
 *.key
 *.crt
