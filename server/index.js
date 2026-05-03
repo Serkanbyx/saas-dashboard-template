@@ -13,7 +13,6 @@ import swaggerSpec from './config/swagger.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import {
   globalLimiter,
-  inviteLimiter,
   searchLimiter,
   superAdminLimiter,
   uploadLimiter,
@@ -59,7 +58,6 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(sanitizeRequest);
 app.use('/api', globalLimiter);
 
-app.post('/api/invitations', inviteLimiter);
 app.use('/api/uploads', uploadLimiter);
 app.use('/api/search', searchLimiter);
 app.use('/api/super-admin', superAdminLimiter);
