@@ -4,7 +4,7 @@ import Organization from '../models/Organization.js';
 
 export const tenantContext = async (req, res, next) => {
   try {
-    const orgId = req.params.orgId || req.headers['x-org-id'];
+    const orgId = req.params.orgId || req.query.orgId || req.headers['x-org-id'];
 
     if (!orgId || !mongoose.isValidObjectId(orgId)) {
       return res.status(400).json({ success: false, message: 'Invalid organization context' });

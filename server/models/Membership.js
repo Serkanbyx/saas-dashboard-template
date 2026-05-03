@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { ORG_ROLES } from '../utils/constants.js';
 
 const membershipSchema = new mongoose.Schema(
   {
@@ -17,7 +18,7 @@ const membershipSchema = new mongoose.Schema(
     role: {
       type: String,
       required: true,
-      enum: ['owner', 'admin', 'member'],
+      enum: ORG_ROLES,
       default: 'member',
     },
     joinedAt: {
