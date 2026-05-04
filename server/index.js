@@ -13,7 +13,6 @@ import swaggerSpec from './config/swagger.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import {
   globalLimiter,
-  searchLimiter,
   superAdminLimiter,
 } from './middleware/rateLimiters.js';
 import { requestId } from './middleware/requestId.js';
@@ -57,7 +56,6 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(sanitizeRequest);
 app.use('/api', globalLimiter);
 
-app.use('/api/search', searchLimiter);
 app.use('/api/super-admin', superAdminLimiter);
 
 app.use('/api/auth', authRoutes);
