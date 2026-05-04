@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import Membership from '../models/Membership.js';
 import Organization from '../models/Organization.js';
 import { logActivity } from '../services/activityService.js';
+import { PLANS } from '../utils/constants.js';
 import { generateUniqueSlug } from '../utils/generateSlug.js';
 
 const createHttpError = (statusCode, message) => Object.assign(new Error(message), { statusCode });
@@ -72,7 +73,7 @@ export const createOrg = async (req, res, next) => {
             ownerId: req.user._id,
             plan: 'free',
             seatsUsed: 1,
-            seatLimit: 5,
+            seatLimit: PLANS.free.seatLimit,
           },
         ],
         { session },
