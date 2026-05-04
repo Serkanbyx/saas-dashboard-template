@@ -7,12 +7,12 @@ import {
   markAsRead,
 } from '../controllers/notificationController.js';
 import { protect } from '../middleware/auth.js';
+import { validate } from '../middleware/validate.js';
 import {
   listNotificationRules,
   markAllAsReadRules,
   notificationIdParamRule,
   unreadCountRules,
-  validate,
 } from '../validators/notificationValidators.js';
 
 const router = Router();

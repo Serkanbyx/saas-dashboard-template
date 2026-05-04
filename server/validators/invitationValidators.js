@@ -1,5 +1,4 @@
 import { body, param, query } from 'express-validator';
-import { validate } from './authValidators.js';
 import { invitationRoles, invitationStatuses } from '../models/Invitation.js';
 
 export const invitationIdParamRule = [
@@ -24,5 +23,3 @@ export const listInvitationRules = [
 export const acceptInvitationRules = [
   body('token').isUUID(4).withMessage('Invalid invitation token'),
 ];
-
-export { validate };

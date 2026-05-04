@@ -1,6 +1,5 @@
 import { body, param, query } from 'express-validator';
 import { PLANS } from '../utils/constants.js';
-import { validate } from './authValidators.js';
 
 const platformRoles = ['user', 'superadmin'];
 const booleanMessage = 'Value must be true or false';
@@ -46,5 +45,3 @@ export const updateUserStatusRules = [
   body('isActive').optional().isBoolean().withMessage(booleanMessage).toBoolean(),
   body('platformRole').optional().isIn(platformRoles).withMessage('Invalid platform role'),
 ];
-
-export { validate };

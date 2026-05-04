@@ -11,13 +11,13 @@ import { protect } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { inviteLimiter } from '../middleware/rateLimiters.js';
 import { tenantContext } from '../middleware/tenant.js';
+import { validate } from '../middleware/validate.js';
 import {
   acceptInvitationRules,
   createInvitationRules,
   invitationIdParamRule,
   invitationTokenParamRule,
   listInvitationRules,
-  validate,
 } from '../validators/invitationValidators.js';
 
 const router = Router();

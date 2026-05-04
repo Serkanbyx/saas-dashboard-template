@@ -10,13 +10,13 @@ import {
 } from '../controllers/authController.js';
 import { protect } from '../middleware/auth.js';
 import { authLimiter } from '../middleware/rateLimiters.js';
+import { validate } from '../middleware/validate.js';
 import {
   changePasswordRules,
   deleteAccountRules,
   loginRules,
   registerRules,
   updateProfileRules,
-  validate,
 } from '../validators/authValidators.js';
 
 const router = Router();

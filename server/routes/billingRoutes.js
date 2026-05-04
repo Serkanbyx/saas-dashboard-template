@@ -8,11 +8,11 @@ import {
 import { protect } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantContext } from '../middleware/tenant.js';
+import { validate } from '../middleware/validate.js';
 import {
   changePlanRules,
   invoiceNumberParamRule,
   listBillingHistoryRules,
-  validate,
 } from '../validators/billingValidators.js';
 
 const router = Router();

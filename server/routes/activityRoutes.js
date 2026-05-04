@@ -3,7 +3,8 @@ import { getActivityStats, listActivity } from '../controllers/activityControlle
 import { protect } from '../middleware/auth.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantContext } from '../middleware/tenant.js';
-import { listActivityRules, validate } from '../validators/activityValidators.js';
+import { validate } from '../middleware/validate.js';
+import { listActivityRules } from '../validators/activityValidators.js';
 
 const router = Router();
 

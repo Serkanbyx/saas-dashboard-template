@@ -1,5 +1,4 @@
 import { query } from 'express-validator';
-import { validate } from './authValidators.js';
 
 const allowedSearchTypes = ['members', 'invitations', 'activities'];
 
@@ -22,5 +21,3 @@ export const globalSearchRules = [
     .withMessage('Invalid search type'),
   query('limit').optional().isInt({ min: 1, max: 10 }).withMessage('Limit must be between 1 and 10'),
 ];
-
-export { validate };

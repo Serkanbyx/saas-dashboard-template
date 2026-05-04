@@ -1,5 +1,4 @@
 import { param, query } from 'express-validator';
-import { validate } from './authValidators.js';
 
 export const notificationIdParamRule = [
   param('id').isMongoId().withMessage('Invalid notification identifier'),
@@ -19,5 +18,3 @@ export const unreadCountRules = [
 export const markAllAsReadRules = [
   query('orgId').optional().isMongoId().withMessage('Invalid organization identifier'),
 ];
-
-export { validate };

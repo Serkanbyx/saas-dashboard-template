@@ -1,22 +1,13 @@
-import { body, validationResult } from 'express-validator';
+import { body } from 'express-validator';
 
 const passwordMessage = 'Password must be at least 8 characters';
 
-export const validate = (req, res, next) => {
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-    return res.status(400).json({
-      success: false,
-      message: errors.array()[0].msg,
-    });
-  }
-
-  return next();
-};
-
 export const registerRules = [
-  body('name').trim().isLength({ min: 2, max: 60 }).withMessage('Name must be between 2 and 60 characters'),
+  body('name')
+    .trim()
+    .isLength({ min: 2, max: 60 })
+    .withMessage('Name must be between 2 and 60 characters')
+    .escape(),
   body('email').trim().isEmail().withMessage('Please provide a valid email address').normalizeEmail(),
   body('password').isLength({ min: 8 }).withMessage(passwordMessage),
 ];
@@ -31,7 +22,8 @@ export const updateProfileRules = [
     .optional()
     .trim()
     .isLength({ min: 2, max: 60 })
-    .withMessage('Name must be between 2 and 60 characters'),
+    .withMessage('Name must be between 2 and 60 characters')
+    .escape(),
   body('avatar')
     .optional({ values: 'falsy' })
     .trim()

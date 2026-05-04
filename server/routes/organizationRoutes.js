@@ -9,11 +9,11 @@ import {
 import { protect } from '../middleware/auth.js';
 import { requireOrgRole } from '../middleware/rbac.js';
 import { tenantContext } from '../middleware/tenant.js';
+import { validate } from '../middleware/validate.js';
 import {
   createOrgRules,
   deleteOrgRules,
   updateOrgRules,
-  validate,
 } from '../validators/organizationValidators.js';
 
 const router = Router();

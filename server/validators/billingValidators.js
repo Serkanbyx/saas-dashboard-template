@@ -1,6 +1,5 @@
 import { body, param, query } from 'express-validator';
 import { PLANS } from '../utils/constants.js';
-import { validate } from './authValidators.js';
 
 const planKeys = Object.keys(PLANS);
 
@@ -19,5 +18,3 @@ export const invoiceNumberParamRule = [
     .matches(/^INV-\d{6}-[A-F0-9]{6}$/)
     .withMessage('Invalid invoice number'),
 ];
-
-export { validate };

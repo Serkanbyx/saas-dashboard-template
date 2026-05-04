@@ -1,5 +1,4 @@
 import { body } from 'express-validator';
-import { validate } from './authValidators.js';
 
 const createLogoRule = () =>
   body('logo')
@@ -13,13 +12,15 @@ const createDescriptionRule = () =>
     .optional({ values: 'falsy' })
     .trim()
     .isLength({ max: 500 })
-    .withMessage('Description cannot exceed 500 characters');
+    .withMessage('Description cannot exceed 500 characters')
+    .escape();
 
 export const createOrgRules = [
   body('name')
     .trim()
     .isLength({ min: 2, max: 80 })
-    .withMessage('Organization name must be between 2 and 80 characters'),
+    .withMessage('Organization name must be between 2 and 80 characters')
+    .escape(),
   createDescriptionRule(),
   createLogoRule(),
 ];
@@ -29,13 +30,12 @@ export const updateOrgRules = [
     .optional()
     .trim()
     .isLength({ min: 2, max: 80 })
-    .withMessage('Organization name must be between 2 and 80 characters'),
+    .withMessage('Organization name must be between 2 and 80 characters')
+    .escape(),
   createDescriptionRule(),
   createLogoRule(),
 ];
 
 export const deleteOrgRules = [
-  body('confirmName').trim().notEmpty().withMessage('Organization name confirmation is required'),
+  body('confirmName').trim().notEmpty().withMessage('Organization name confirmation is required').escape(),
 ];
-
-export { validate };

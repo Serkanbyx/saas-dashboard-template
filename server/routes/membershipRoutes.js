@@ -10,11 +10,11 @@ import {
 import { protect } from '../middleware/auth.js';
 import { requireOrgRole, requirePermission } from '../middleware/rbac.js';
 import { tenantContext } from '../middleware/tenant.js';
+import { validate } from '../middleware/validate.js';
 import {
   membershipIdParamRule,
   transferOwnershipRules,
   updateMemberRoleRules,
-  validate,
 } from '../validators/membershipValidators.js';
 
 const router = Router();
