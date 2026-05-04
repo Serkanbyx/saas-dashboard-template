@@ -1,5 +1,9 @@
 import pino from 'pino';
-import env from './env.js';
+import dotenv from 'dotenv';
+
+dotenv.config({ quiet: true });
+
+const nodeEnv = process.env.NODE_ENV || 'development';
 
 const redactPaths = [
   'req.headers.authorization',
@@ -13,8 +17,8 @@ const redactPaths = [
 ];
 
 export const logger = pino({
-  level: env.LOG_LEVEL || (env.NODE_ENV === 'production' ? 'info' : 'debug'),
+  level: process.env.LOG_LEVEL || (nodeEnv === 'production' ? 'info' : 'debug'),
   redact: { paths: redactPaths, censor: '[REDACTED]' },
-  base: { env: env.NODE_ENV },
+  base: { env: nodeEnv },
   timestamp: pino.stdTimeFunctions.isoTime,
 });

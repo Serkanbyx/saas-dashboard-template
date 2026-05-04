@@ -1,5 +1,7 @@
 import env from '../config/env.js';
 import { logger } from '../config/logger.js';
+// Optional: enable in production by installing @sentry/node and uncommenting.
+// import * as Sentry from '@sentry/node';
 
 const getStatusCode = (err) => {
   if (err.statusCode || err.status) return err.statusCode || err.status;
@@ -30,6 +32,9 @@ export const errorHandler = (err, req, res, _next) => {
   } else {
     logger.error({ err }, err.message || message);
   }
+
+  // Optional: enable in production by uncommenting after Sentry is configured.
+  // Sentry.captureException(err);
 
   const response = {
     success: false,

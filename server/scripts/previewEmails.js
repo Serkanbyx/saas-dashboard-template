@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { logger } from '../config/logger.js';
 import { renderEmail } from '../utils/renderEmail.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -62,5 +63,5 @@ for (const { templateName, variables } of sampleTemplates) {
   const filePath = path.join(previewDir, `${templateName}.html`);
 
   await writeFile(filePath, html, 'utf8');
-  console.log(filePath);
+  logger.info({ filePath }, 'Email preview generated');
 }

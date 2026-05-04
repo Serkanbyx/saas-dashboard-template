@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import { logger } from './logger.js';
 
 dotenv.config({ quiet: true });
 
@@ -24,7 +25,7 @@ const env = {
   EMAIL_USER: process.env.EMAIL_USER,
   EMAIL_PASS: process.env.EMAIL_PASS,
   EMAIL_FROM: process.env.EMAIL_FROM || 'SaaS Dashboard <noreply@saas.app>',
-  LOG_LEVEL: process.env.LOG_LEVEL || 'info',
+  LOG_LEVEL: process.env.LOG_LEVEL,
   EXPOSE_DOCS_IN_PROD: parseBoolean(process.env.EXPOSE_DOCS_IN_PROD),
   SUPER_ADMIN_EMAIL: process.env.SUPER_ADMIN_EMAIL,
   SUPER_ADMIN_PASSWORD: process.env.SUPER_ADMIN_PASSWORD,
@@ -50,12 +51,12 @@ if (env.NODE_ENV === 'production') {
   const missingKeys = requiredProductionEnv.filter((key) => !env[key]);
 
   if (missingKeys.length > 0) {
-    console.error(`Missing required production environment variables: ${missingKeys.join(', ')}`);
+    logger.fatal({ missingKeys }, 'Missing required production environment variables');
     process.exit(1);
   }
 
   if (env.JWT_SECRET.length < 32) {
-    console.error('JWT_SECRET must be at least 32 characters in production.');
+    logger.fatal('JWT_SECRET must be at least 32 characters in production.');
     process.exit(1);
   }
 }
