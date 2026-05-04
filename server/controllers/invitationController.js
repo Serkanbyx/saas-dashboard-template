@@ -7,6 +7,7 @@ import Organization from '../models/Organization.js';
 import User from '../models/User.js';
 import { logActivity } from '../services/activityService.js';
 import { sendInvitationEmail, sendWelcomeEmail } from '../services/emailService.js';
+import { createNotificationSafely, createOrgNotifications } from '../services/notificationService.js';
 import { emitToOrg } from '../services/socketService.js';
 
 const createHttpError = (statusCode, message) => Object.assign(new Error(message), { statusCode });
@@ -145,6 +146,22 @@ export const createInvitation = async (req, res, next) => {
       acceptUrl: getAcceptUrl(invitation.token),
       expiresAt: invitation.expiresAt,
     });
+
+    const invitedUser = await User.findOne({ email: invitation.email }).select('_id');
+    if (invitedUser) {
+      await createNotificationSafely({
+        userId: invitedUser._id,
+        orgId: req.orgId,
+        type: 'invite_received',
+        title: 'New organization invitation',
+        message: `${req.user.name} invited you to join ${req.org.name}.`,
+        link: '/invitations',
+        metadata: {
+          invitationId: invitation._id,
+          role: invitation.role,
+        },
+      });
+    }
 
     emitToOrg(req.orgId, 'invitation:created', {
       invitationId: invitation._id,
@@ -394,6 +411,34 @@ export const acceptInvitation = async (req, res, next) => {
       to: req.user.email,
       name: req.user.name,
       orgName: organization.name,
+    });
+
+    await createNotificationSafely({
+      userId: invitation.invitedBy,
+      orgId: invitation.orgId,
+      type: 'invite_accepted',
+      title: 'Invitation accepted',
+      message: `${req.user.name} accepted your invitation to ${organization.name}.`,
+      link: '/members',
+      metadata: {
+        invitationId: invitation._id,
+        membershipId: membership._id,
+        acceptedByUserId: req.user._id,
+      },
+    });
+
+    await createOrgNotifications({
+      orgId: invitation.orgId,
+      excludeUserIds: [req.user._id, invitation.invitedBy],
+      type: 'member_joined',
+      title: 'New member joined',
+      message: `${req.user.name} joined ${organization.name}.`,
+      link: '/members',
+      metadata: {
+        membershipId: membership._id,
+        userId: req.user._id,
+        role: membership.role,
+      },
     });
 
     emitToOrg(invitation.orgId, 'membership:created', {

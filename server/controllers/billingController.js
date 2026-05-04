@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import BillingRecord from '../models/BillingRecord.js';
 import { logActivity } from '../services/activityService.js';
+import { createOrgNotifications } from '../services/notificationService.js';
 import { emitToOrg } from '../services/socketService.js';
 import { PLANS } from '../utils/constants.js';
 import { generateInvoiceNumber } from '../utils/generateInvoiceNumber.js';
@@ -122,7 +123,8 @@ export const changePlan = async (req, res, next) => {
       },
     });
 
-    const notification = {
+    await createOrgNotifications({
+      orgId: req.orgId,
       type: 'plan_changed',
       title: 'Plan changed',
       message: `Plan changed from ${PLANS[previousPlan].name} to ${selectedPlan.name}.`,
@@ -132,13 +134,12 @@ export const changePlan = async (req, res, next) => {
         newPlan,
         invoiceNumber: billingRecord.invoiceNumber,
       },
-    };
+    });
 
     emitToOrg(req.orgId, 'billing:plan_changed', {
       plan: getPlanPayload(req.org),
       billingRecord,
     });
-    emitToOrg(req.orgId, 'notification:new', notification);
 
     return res.json({
       success: true,

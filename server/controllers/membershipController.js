@@ -4,6 +4,7 @@ import Membership from '../models/Membership.js';
 import Organization from '../models/Organization.js';
 import User from '../models/User.js';
 import { logActivity } from '../services/activityService.js';
+import { createNotificationSafely } from '../services/notificationService.js';
 import { emitToOrg } from '../services/socketService.js';
 import { ORG_ROLES } from '../utils/constants.js';
 
@@ -203,6 +204,21 @@ export const updateMemberRole = async (req, res, next) => {
       },
     });
 
+    await createNotificationSafely({
+      userId: membership.userId,
+      orgId: req.orgId,
+      type: 'role_changed',
+      title: 'Role changed',
+      message: `Your role in ${req.org.name} changed from ${previousRole} to ${role}.`,
+      link: '/members',
+      metadata: {
+        membershipId: membership._id,
+        previousRole,
+        role,
+        changedByUserId: req.user._id,
+      },
+    });
+
     emitToOrg(req.orgId, 'membership:updated', { membershipId: membership._id, role });
 
     return res.json({ success: true, data: { membership } });
@@ -238,6 +254,20 @@ export const removeMember = async (req, res, next) => {
       targetId: removedMembership._id,
       metadata: {
         targetUserId: removedMembership.userId,
+        role: removedMembership.role,
+      },
+    });
+
+    await createNotificationSafely({
+      userId: removedMembership.userId,
+      orgId: req.orgId,
+      type: 'member_removed',
+      title: 'Removed from organization',
+      message: `You were removed from ${req.org.name}.`,
+      link: '/organizations',
+      metadata: {
+        membershipId: removedMembership._id,
+        removedByUserId: req.user._id,
         role: removedMembership.role,
       },
     });
