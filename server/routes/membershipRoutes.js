@@ -12,6 +12,7 @@ import { requireOrgRole, requirePermission } from '../middleware/rbac.js';
 import { tenantContext } from '../middleware/tenant.js';
 import { validate } from '../middleware/validate.js';
 import {
+  listMembersRules,
   membershipIdParamRule,
   transferOwnershipRules,
   updateMemberRoleRules,
@@ -42,7 +43,7 @@ const router = Router();
  *       403:
  *         description: Forbidden
  */
-router.get('/', protect, tenantContext, requirePermission('members:read'), listMembers);
+router.get('/', protect, tenantContext, requirePermission('members:read'), listMembersRules, validate, listMembers);
 
 /**
  * @openapi

@@ -1821,58 +1821,58 @@ Before merging, verify every item below is implemented. Treat unchecked items as
 
 ### Core security checklist
 
-- [ ] Mass assignment: every controller destructures only allowed fields (no `Model.create(req.body)`)
-- [ ] Role protection: `platformRole` not settable via register, update profile, or any public route
-- [ ] Org role protection: `role` field on Membership not settable via public endpoints to `'owner'`
-- [ ] User enumeration: identical error for wrong email vs wrong password (`"Invalid email or password"`)
-- [ ] Password: hashed (bcrypt rounds 12), `select: false`, never returned, change requires current
-- [ ] Account deletion requires password confirmation; cascades all related data
-- [ ] JWT secret: min 32 chars enforced at startup in production (process exits if invalid)
-- [ ] Rate limiters: separate instances for global, auth, invite, upload, search, super-admin (all mounted)
-- [ ] Helmet: enabled with default config
-- [ ] CORS: strict specific origin from `CLIENT_URL`, never `*` in production
-- [ ] Body size limits: `express.json({ limit: '10kb' })` and `urlencoded({ limit: '10kb' })`
-- [ ] mongo-sanitize: applied via custom middleware on `req.body` and `req.params` only
-- [ ] Express 5 compatibility: no middleware assigns to `req.query`; `hpp` is NOT installed
-- [ ] XSS: `escape()` on all text inputs in express-validator chains
-- [ ] ReDoS: regex special characters escaped via `escapeRegex` in all search queries
-- [ ] Tenant isolation: `tenantContext` middleware applied on every org-scoped route; super admin bypass is explicit
-- [ ] Ownership checks: update/delete operations verify `actorUserId === resource.userId` OR admin role
-- [ ] Member role hard rules enforced: cannot self-promote, cannot promote to owner via API, owner cannot be removed/demoted/leave
-- [ ] Super admin self-protection: cannot deactivate self, cannot demote last super admin
-- [ ] Pagination clamp: `limit` ≤ 50, `page` forced to positive integer in every paginated endpoint
-- [ ] File upload: MIME whitelist, 5 MB size limit, server-generated filenames via Cloudinary
-- [ ] Cascade deletes: org delete removes memberships, invitations, notifications, activity logs
-- [ ] Error handler: no stack traces or internal paths in production
-- [ ] x-powered-by disabled
-- [ ] `.env.example` synced with all required variables (no real secrets)
-- [ ] No `console.log` of sensitive data anywhere; logger redact paths cover `Authorization`, `password*`, `token*`
-- [ ] Token transport: JWT in `Authorization: Bearer` header only
-- [ ] Mongoose 9 hooks: all `pre`/`post` middleware use `async function()` without `next` parameter
-- [ ] Socket.io: JWT auth enforced in `io.use`; `join:org` re-verifies membership server-side
-- [ ] Invitation tokens: UUID v4, single-use, 7-day expiry, email match required on accept
-- [ ] Seat limit: enforced on invite create AND accept; downgrade blocked when over limit
-- [ ] Activity log: `actorId` always set server-side from `req.user._id`
-- [ ] Email templates: all variables HTML-escaped to prevent email-XSS
-- [ ] Swagger docs: disabled in production by default; gated by `EXPOSE_DOCS_IN_PROD` flag
-- [ ] Search API: tenant-scoped, regex-escaped, length-capped, rate-limited
+- [x] Mass assignment: every controller destructures only allowed fields (no `Model.create(req.body)`)
+- [x] Role protection: `platformRole` not settable via register, update profile, or any public route
+- [x] Org role protection: `role` field on Membership not settable via public endpoints to `'owner'`
+- [x] User enumeration: identical error for wrong email vs wrong password (`"Invalid email or password"`)
+- [x] Password: hashed (bcrypt rounds 12), `select: false`, never returned, change requires current
+- [x] Account deletion requires password confirmation; cascades all related data
+- [x] JWT secret: min 32 chars enforced at startup in production (process exits if invalid)
+- [x] Rate limiters: separate instances for global, auth, invite, upload, search, super-admin (all mounted)
+- [x] Helmet: enabled with default config
+- [x] CORS: strict specific origin from `CLIENT_URL`, never `*` in production
+- [x] Body size limits: `express.json({ limit: '10kb' })` and `urlencoded({ limit: '10kb' })`
+- [x] mongo-sanitize: applied via custom middleware on `req.body` and `req.params` only
+- [x] Express 5 compatibility: no middleware assigns to `req.query`; `hpp` is NOT installed
+- [x] XSS: `escape()` on all text inputs in express-validator chains
+- [x] ReDoS: regex special characters escaped via `escapeRegex` in all search queries
+- [x] Tenant isolation: `tenantContext` middleware applied on every org-scoped route; super admin bypass is explicit
+- [x] Ownership checks: update/delete operations verify `actorUserId === resource.userId` OR admin role
+- [x] Member role hard rules enforced: cannot self-promote, cannot promote to owner via API, owner cannot be removed/demoted/leave
+- [x] Super admin self-protection: cannot deactivate self, cannot demote last super admin
+- [x] Pagination clamp: `limit` ≤ 50, `page` forced to positive integer in every paginated endpoint
+- [x] File upload: MIME whitelist, 5 MB size limit, server-generated filenames via Cloudinary
+- [x] Cascade deletes: org delete removes memberships, invitations, notifications, activity logs
+- [x] Error handler: no stack traces or internal paths in production
+- [x] x-powered-by disabled
+- [x] `.env.example` synced with all required variables (no real secrets)
+- [x] No `console.log` of sensitive data anywhere; logger redact paths cover `Authorization`, `password*`, `token*`
+- [x] Token transport: JWT in `Authorization: Bearer` header only
+- [x] Mongoose 9 hooks: all `pre`/`post` middleware use `async function()` without `next` parameter
+- [x] Socket.io: JWT auth enforced in `io.use`; `join:org` re-verifies membership server-side
+- [x] Invitation tokens: UUID v4, single-use, 7-day expiry, email match required on accept
+- [x] Seat limit: enforced on invite create AND accept; downgrade blocked when over limit
+- [x] Activity log: `actorId` always set server-side from `req.user._id`
+- [x] Email templates: all variables HTML-escaped to prevent email-XSS
+- [x] Swagger docs: disabled in production by default; gated by `EXPOSE_DOCS_IN_PROD` flag
+- [x] Search API: tenant-scoped, regex-escaped, length-capped, rate-limited
 
 ### Public Repository Security Sub-Checklist
 
 These items are specific to the public-repo posture and must be re-verified before every push/publish:
 
-- [ ] No real secret values appear anywhere in the source tree (search for `mongodb+srv://`, `sk_`, `pk_`, your real Cloudinary cloud name, real SMTP password, real super admin password)
-- [ ] No environment variables have fallback default values containing real-looking secrets in code
-- [ ] `.env.example` placeholders are obviously fake (literal `replace-this-with-...` text, not random-looking strings)
-- [ ] `.gitignore` excludes `.env`, `.env.*` (with `!.env.example` exception), `*.pem`, `*.key`, `*.crt`, `uploads/`, `logs/`, build output, IDE/OS files
-- [ ] No `console.log(req.body)`, `console.log(req.user)`, `console.log(token)`, or `console.log(process.env)` anywhere
-- [ ] No commented-out code containing connection strings, tokens, or hardcoded passwords
-- [ ] No real personal email addresses, phone numbers, or names in seed scripts, fixtures, or sample data
-- [ ] No internal hostnames, IPs, or third-party project IDs in code/comments
-- [ ] README screenshots in `docs/` are demo/redacted
-- [ ] No CI workflow file echoes secrets to logs; all secrets use `${{ secrets.NAME }}`
-- [ ] LICENSE file present (MIT recommended)
-- [ ] If a secret was ever accidentally committed, it is treated as compromised — rotate it on the provider before publishing
+- [x] No real secret values appear anywhere in the source tree (search for `mongodb+srv://`, `sk_`, `pk_`, your real Cloudinary cloud name, real SMTP password, real super admin password)
+- [x] No environment variables have fallback default values containing real-looking secrets in code
+- [x] `.env.example` placeholders are obviously fake (literal `replace-this-with-...` text, not random-looking strings)
+- [x] `.gitignore` excludes `.env`, `.env.*` (with `!.env.example` exception), `*.pem`, `*.key`, `*.crt`, `uploads/`, `logs/`, build output, IDE/OS files
+- [x] No `console.log(req.body)`, `console.log(req.user)`, `console.log(token)`, or `console.log(process.env)` anywhere
+- [x] No commented-out code containing connection strings, tokens, or hardcoded passwords
+- [x] No real personal email addresses, phone numbers, or names in seed scripts, fixtures, or sample data
+- [x] No internal hostnames, IPs, or third-party project IDs in code/comments
+- [x] README screenshots in `docs/` are demo/redacted
+- [x] No CI workflow file echoes secrets to logs; all secrets use `${{ secrets.NAME }}`
+- [x] LICENSE file present (MIT recommended)
+- [x] If a secret was ever accidentally committed, it is treated as compromised — rotate it on the provider before publishing
 
 ---
 

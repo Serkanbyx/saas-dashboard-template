@@ -16,13 +16,23 @@ export const userIdParamRule = [param('userId').isMongoId().withMessage('Invalid
 export const listAllOrgsRules = [
   ...paginationRules,
   query('plan').optional().isIn(Object.keys(PLANS)).withMessage('Invalid plan'),
-  query('search').optional().trim().isLength({ max: 120 }).withMessage('Search cannot exceed 120 characters'),
+  query('search')
+    .optional({ values: 'falsy' })
+    .trim()
+    .isLength({ max: 120 })
+    .withMessage('Search cannot exceed 120 characters')
+    .escape(),
   query('isDeleted').optional().isBoolean().withMessage(booleanMessage).toBoolean(),
 ];
 
 export const listAllUsersRules = [
   ...paginationRules,
-  query('search').optional().trim().isLength({ max: 120 }).withMessage('Search cannot exceed 120 characters'),
+  query('search')
+    .optional({ values: 'falsy' })
+    .trim()
+    .isLength({ max: 120 })
+    .withMessage('Search cannot exceed 120 characters')
+    .escape(),
   query('platformRole').optional().isIn(platformRoles).withMessage('Invalid platform role'),
   query('isActive').optional().isBoolean().withMessage(booleanMessage).toBoolean(),
 ];
@@ -32,12 +42,13 @@ export const suspendOrgRules = [
   body('reason')
     .trim()
     .isLength({ min: 3, max: 500 })
-    .withMessage('Suspension reason must be between 3 and 500 characters'),
+    .withMessage('Suspension reason must be between 3 and 500 characters')
+    .escape(),
 ];
 
 export const forceDeleteOrgRules = [
   ...orgIdParamRule,
-  body('confirmName').trim().notEmpty().withMessage('Organization name confirmation is required'),
+  body('confirmName').trim().notEmpty().withMessage('Organization name confirmation is required').escape(),
 ];
 
 export const updateUserStatusRules = [

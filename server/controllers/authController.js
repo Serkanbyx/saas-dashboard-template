@@ -1,3 +1,9 @@
+import ActivityLog from '../models/ActivityLog.js';
+import BillingRecord from '../models/BillingRecord.js';
+import Invitation from '../models/Invitation.js';
+import Membership from '../models/Membership.js';
+import Notification from '../models/Notification.js';
+import Organization from '../models/Organization.js';
 import User from '../models/User.js';
 import { generateToken } from '../utils/generateToken.js';
 
@@ -15,76 +21,64 @@ const sendAuthResponse = (res, statusCode, user) => {
   });
 };
 
-const importOptionalModel = async (modelPath) => {
-  try {
-    const modelModule = await import(modelPath);
-    return modelModule.default;
-  } catch (error) {
-    if (error.code === 'ERR_MODULE_NOT_FOUND') {
-      return null;
-    }
-
-    throw error;
-  }
-};
-
-const loadCascadeModels = async () => {
-  const [Membership, Organization, Invitation] = await Promise.all([
-    importOptionalModel('../models/Membership.js'),
-    importOptionalModel('../models/Organization.js'),
-    importOptionalModel('../models/Invitation.js'),
+const deleteOrgRelatedData = (orgId) =>
+  Promise.all([
+    Membership.deleteMany({ orgId }),
+    Invitation.deleteMany({ orgId }),
+    Notification.deleteMany({ orgId }),
+    ActivityLog.deleteMany({ orgId }),
+    BillingRecord.deleteMany({ orgId }),
   ]);
 
-  return { Membership, Organization, Invitation };
-};
+const cascadeDeleteAccountData = async (user) => {
+  const userId = user._id;
+  const membershipsToRemove = await Membership.find({ userId }).select('orgId');
+  const deletedOrgIds = new Set();
+  const ownedOrganizations = await Organization.find({
+    ownerId: userId,
+    isDeleted: { $ne: true },
+  });
 
-const cascadeDeleteAccountData = async (userId) => {
-  const { Membership, Organization, Invitation } = await loadCascadeModels();
+  await Promise.all(
+    ownedOrganizations.map(async (organization) => {
+      const remainingMemberships = await Membership.find({
+        orgId: organization._id,
+        userId: { $ne: userId },
+      }).sort({ role: 1, joinedAt: 1 });
 
-  if (Organization && Membership) {
-    const ownedOrganizations = await Organization.find({
-      ownerId: userId,
-      isDeleted: { $ne: true },
-    });
+      const nextOwner =
+        remainingMemberships.find((membership) => membership.role === 'admin') || remainingMemberships[0];
 
-    await Promise.all(
-      ownedOrganizations.map(async (organization) => {
-        const remainingMemberships = await Membership.find({
-          orgId: organization._id,
-          userId: { $ne: userId },
-        }).sort({ role: 1, joinedAt: 1 });
+      if (nextOwner) {
+        nextOwner.role = 'owner';
+        organization.ownerId = nextOwner.userId;
+        organization.seatsUsed = Math.max((organization.seatsUsed || 1) - 1, 0);
+        await Promise.all([nextOwner.save(), organization.save()]);
+        return;
+      }
 
-        const nextOwner =
-          remainingMemberships.find((membership) => membership.role === 'admin') || remainingMemberships[0];
+      organization.isDeleted = true;
+      organization.deletedAt = new Date();
+      deletedOrgIds.add(organization._id.toString());
+      await organization.save();
+      await deleteOrgRelatedData(organization._id);
+    }),
+  );
 
-        if (nextOwner) {
-          nextOwner.role = 'owner';
-          organization.ownerId = nextOwner.userId;
-          await Promise.all([nextOwner.save(), organization.save()]);
-          return;
-        }
+  const orgIdsToDecrement = membershipsToRemove
+    .map((membership) => membership.orgId)
+    .filter((orgId) => !deletedOrgIds.has(orgId.toString()));
 
-        if ('isDeleted' in organization) {
-          organization.isDeleted = true;
-          organization.deletedAt = new Date();
-          await organization.save();
-        } else {
-          await Organization.deleteOne({ _id: organization._id });
-        }
-
-        await Membership.deleteMany({ orgId: organization._id });
-        if (Invitation) await Invitation.deleteMany({ orgId: organization._id });
-      }),
-    );
-  }
-
-  if (Membership) {
-    await Membership.deleteMany({ userId });
-  }
-
-  if (Invitation) {
-    await Invitation.deleteMany({ invitedBy: userId });
-  }
+  await Promise.all([
+    Membership.deleteMany({ userId }),
+    Organization.updateMany({ _id: { $in: orgIdsToDecrement } }, { $inc: { seatsUsed: -1 } }),
+    Invitation.deleteMany({
+      $or: [{ invitedBy: userId }, { acceptedByUserId: userId }, { email: user.email }],
+    }),
+    Notification.deleteMany({ userId }),
+    ActivityLog.deleteMany({ actorId: userId }),
+    BillingRecord.deleteMany({ actorId: userId }),
+  ]);
 };
 
 export const register = async (req, res, next) => {
@@ -202,7 +196,7 @@ export const deleteAccount = async (req, res, next) => {
       throw createHttpError(400, 'Password is incorrect');
     }
 
-    await cascadeDeleteAccountData(user._id);
+    await cascadeDeleteAccountData(user);
     await User.deleteOne({ _id: user._id });
 
     res.json({ success: true, message: 'Account deleted successfully' });

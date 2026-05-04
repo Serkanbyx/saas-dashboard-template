@@ -38,17 +38,12 @@ const cascadeSoftDeleteOrgData = async ({ orgId, session }) => {
     importOptionalModel('../models/BillingRecord.js'),
   ]);
 
-  const now = new Date();
   const cascadeOperations = [Membership.deleteMany({ orgId }).session(session)];
 
   if (Invitation) cascadeOperations.push(Invitation.deleteMany({ orgId }).session(session));
   if (Notification) cascadeOperations.push(Notification.deleteMany({ orgId }).session(session));
-  if (ActivityLog) {
-    cascadeOperations.push(ActivityLog.updateMany({ orgId }, { archived: true, archivedAt: now }).session(session));
-  }
-  if (BillingRecord) {
-    cascadeOperations.push(BillingRecord.updateMany({ orgId }, { archived: true, archivedAt: now }).session(session));
-  }
+  if (ActivityLog) cascadeOperations.push(ActivityLog.deleteMany({ orgId }).session(session));
+  if (BillingRecord) cascadeOperations.push(BillingRecord.deleteMany({ orgId }).session(session));
 
   await Promise.all(cascadeOperations);
 };
@@ -176,15 +171,6 @@ export const deleteOrg = async (req, res, next) => {
       await req.org.save({ session });
 
       await cascadeSoftDeleteOrgData({ orgId: req.org._id, session });
-    });
-
-    await logActivity({
-      orgId: req.org._id,
-      actorId: req.user._id,
-      action: 'org.deleted',
-      targetType: 'organization',
-      targetId: req.org._id,
-      metadata: { name: req.org.name },
     });
 
     return res.json({ success: true, message: 'Organization deleted successfully' });
