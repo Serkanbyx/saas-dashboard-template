@@ -8,6 +8,30 @@ import { globalSearchRules, validate } from '../validators/searchValidators.js';
 
 const router = Router();
 
+/**
+ * @openapi
+ * /search:
+ *   get:
+ *     summary: Search organization members, invitations, activities, and billing records
+ *     tags: [Search]
+ *     security: [{ bearerAuth: [], orgIdHeader: [] }]
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         required: true
+ *         schema: { type: string }
+ *       - in: query
+ *         name: types
+ *         schema: { type: string, example: "members,invitations" }
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, minimum: 1, maximum: 10 }
+ *     responses:
+ *       200:
+ *         description: Search results
+ *       403:
+ *         description: Forbidden
+ */
 router.get(
   '/',
   protect,
