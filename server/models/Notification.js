@@ -7,6 +7,7 @@ export const NOTIFICATION_TYPES = [
   'member_joined',
   'member_removed',
   'plan_changed',
+  'org_suspended',
   'mention',
 ];
 

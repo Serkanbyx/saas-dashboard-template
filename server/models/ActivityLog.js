@@ -15,6 +15,10 @@ export const ACTIVITY_ACTIONS = [
   'billing.plan_changed',
   'billing.payment_recorded',
   'ownership.transferred',
+  'superadmin.org_suspended',
+  'superadmin.org_restored',
+  'superadmin.org_force_deleted',
+  'superadmin.user_updated',
 ];
 
 export const ACTIVITY_TARGET_TYPES = ['user', 'membership', 'invitation', 'organization', 'billing'];
@@ -26,7 +30,6 @@ const activityLogSchema = new mongoose.Schema(
     orgId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Organization',
-      required: [true, 'Organization is required'],
       index: true,
     },
     actorId: {
