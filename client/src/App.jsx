@@ -1,4 +1,5 @@
 ﻿import { Toaster } from 'react-hot-toast';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { ThemeToggle } from './components/common/ThemeToggle';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
@@ -31,7 +32,9 @@ const App = () => {
           <SocketProvider>
             <NotificationProvider>
               <Toaster position="top-right" />
-              <AppShell />
+              <ErrorBoundary>
+                <AppShell />
+              </ErrorBoundary>
             </NotificationProvider>
           </SocketProvider>
         </OrgProvider>
