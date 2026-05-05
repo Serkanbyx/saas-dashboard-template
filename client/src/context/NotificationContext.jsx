@@ -1,4 +1,4 @@
-import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
 import { useOrg } from '../hooks/useOrg';
@@ -12,12 +12,60 @@ export const NotificationContext = createContext(null);
 const getNotificationId = (notification) => notification?._id || notification?.id;
 const getOrgId = (org) => org?._id || org?.id;
 
+const getToastAvatar = (notification) =>
+  notification?.metadata?.actorAvatar ||
+  notification?.metadata?.avatar ||
+  notification?.metadata?.userAvatar ||
+  notification?.metadata?.orgLogo ||
+  null;
+
+const getToastInitials = (notification) => {
+  const fallbackText = notification?.metadata?.actorName || notification?.title || notification?.message || 'Notification';
+
+  return fallbackText
+    .split(/[\s@.]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('');
+};
+
+const NotificationToast = ({ notification }) => {
+  const avatar = getToastAvatar(notification);
+
+  return (
+    <div className="flex max-w-sm items-start gap-3">
+      {avatar ? (
+        <img
+          src={avatar}
+          alt=""
+          className="h-9 w-9 flex-none rounded-full object-cover"
+          referrerPolicy="no-referrer"
+        />
+      ) : (
+        <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-brand-50 text-xs font-bold text-brand-700 dark:bg-cyan-950/40 dark:text-cyan-200">
+          {getToastInitials(notification)}
+        </span>
+      )}
+      <span className="min-w-0">
+        <span className="block text-sm font-semibold text-gray-950 dark:text-slate-50">
+          {notification?.title || 'New notification'}
+        </span>
+        <span className="mt-1 block text-sm text-gray-600 dark:text-slate-300">
+          {notification?.message || 'You have a new update.'}
+        </span>
+      </span>
+    </div>
+  );
+};
+
 export const NotificationProvider = ({ children }) => {
   const { user, token } = useAuth();
   const { activeOrg } = useOrg();
   const { socket } = useSocket();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const seenNotificationIdsRef = useRef(new Set());
   const activeOrgId = getOrgId(activeOrg);
 
   const addNotification = useCallback((notification) => {
@@ -25,8 +73,14 @@ export const NotificationProvider = ({ children }) => {
       return;
     }
 
+    const notificationId = getNotificationId(notification);
+    const wasAlreadySeen = notificationId ? seenNotificationIdsRef.current.has(notificationId) : false;
+
+    if (notificationId) {
+      seenNotificationIdsRef.current.add(notificationId);
+    }
+
     setNotifications((currentNotifications) => {
-      const notificationId = getNotificationId(notification);
       const filteredNotifications = notificationId
         ? currentNotifications.filter((item) => getNotificationId(item) !== notificationId)
         : currentNotifications;
@@ -34,11 +88,13 @@ export const NotificationProvider = ({ children }) => {
       return [notification, ...filteredNotifications].slice(0, MAX_NOTIFICATIONS);
     });
 
-    if (!notification.read) {
+    if (!notification.read && !wasAlreadySeen) {
       setUnreadCount((currentCount) => currentCount + 1);
     }
 
-    toast(notification.title || notification.message || 'New notification');
+    if (!wasAlreadySeen) {
+      toast.success(<NotificationToast notification={notification} />);
+    }
   }, []);
 
   const markRead = useCallback(
@@ -80,6 +136,7 @@ export const NotificationProvider = ({ children }) => {
       if (!token || !user) {
         setNotifications([]);
         setUnreadCount(0);
+        seenNotificationIdsRef.current = new Set();
         return;
       }
 
@@ -98,12 +155,16 @@ export const NotificationProvider = ({ children }) => {
           return;
         }
 
-        setNotifications(notificationsResponse.data?.data?.notifications || []);
+        const loadedNotifications = notificationsResponse.data?.data?.notifications || [];
+
+        seenNotificationIdsRef.current = new Set(loadedNotifications.map(getNotificationId).filter(Boolean));
+        setNotifications(loadedNotifications);
         setUnreadCount(unreadCountResponse.data?.data?.count || 0);
       } catch (_error) {
         if (isMounted) {
           setNotifications([]);
           setUnreadCount(0);
+          seenNotificationIdsRef.current = new Set();
         }
       }
     };

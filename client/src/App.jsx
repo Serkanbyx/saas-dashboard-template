@@ -93,7 +93,7 @@ const App = () => {
           <OrgProvider>
             <SocketProvider>
               <NotificationProvider>
-                <Toaster position="top-right" />
+                <Toaster position="top-right" toastOptions={{ duration: 5000 }} />
                 <ErrorBoundary>
                   <AppRoutes />
                 </ErrorBoundary>
