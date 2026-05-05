@@ -79,8 +79,8 @@ export const OrgProvider = ({ children }) => {
   );
 
   const switchOrg = useCallback(
-    (orgId) => {
-      const nextActiveOrg = orgs.find((organization) => getOrgId(organization) === orgId);
+    (orgId, organizationList = orgs) => {
+      const nextActiveOrg = organizationList.find((organization) => getOrgId(organization) === orgId);
 
       if (!nextActiveOrg) {
         return null;

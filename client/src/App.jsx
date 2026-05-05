@@ -37,6 +37,9 @@ const AppRoutes = () => (
     <Route path="/invite/accept" element={<AuthLayout />}>
       <Route index element={<AcceptInvitePage />} />
     </Route>
+    <Route path="/invitations/accept" element={<AuthLayout />}>
+      <Route index element={<AcceptInvitePage />} />
+    </Route>
 
     <Route element={<ProtectedRoute />}>
       <Route element={<AuthLayout />}>

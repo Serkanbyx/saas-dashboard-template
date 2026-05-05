@@ -150,7 +150,7 @@ export const LoginPage = () => {
   const auth = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [formValues, setFormValues] = useState({ email: '', password: '' });
+  const [formValues, setFormValues] = useState({ email: searchParams.get('email') || '', password: '' });
   const [formError, setFormError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -226,7 +226,8 @@ export const LoginPage = () => {
 export const RegisterPage = () => {
   const auth = useAuth();
   const navigate = useNavigate();
-  const [formValues, setFormValues] = useState({ name: '', email: '', password: '', confirmPassword: '' });
+  const [searchParams] = useSearchParams();
+  const [formValues, setFormValues] = useState({ name: '', email: searchParams.get('email') || '', password: '', confirmPassword: '' });
   const [formError, setFormError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -267,6 +268,13 @@ export const RegisterPage = () => {
         email: formValues.email,
         password: formValues.password,
       });
+
+      const nextPath = getSafeNextPath(searchParams.get('next'));
+      if (nextPath) {
+        navigate(nextPath, { replace: true });
+        return;
+      }
+
       navigate('/create-org', { replace: true });
     } catch (error) {
       const details = extractErrorDetails(error, 'Unable to create your account. Please try again.');

@@ -54,13 +54,13 @@ export const AuthProvider = ({ children }) => {
     [storeSession],
   );
 
-  const logout = useCallback(() => {
+  const logout = useCallback((redirectPath = '/login') => {
     clearAuthStorage();
     setToken(null);
     setUser(null);
 
-    if (window.location.pathname !== '/login') {
-      window.location.assign('/login');
+    if (`${window.location.pathname}${window.location.search}` !== redirectPath) {
+      window.location.assign(redirectPath);
     }
   }, []);
 

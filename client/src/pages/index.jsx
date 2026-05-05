@@ -6,6 +6,7 @@ import * as activityService from '../services/activityService';
 import * as billingService from '../services/billingService';
 import * as membershipService from '../services/membershipService';
 export { CreateOrgPage, LoginPage, RegisterPage } from './AuthPages';
+export { AcceptInvitePage } from './invite/AcceptInvitePage';
 
 const PageHeader = ({ eyebrow, title, description }) => (
   <div>
@@ -26,29 +27,6 @@ const ContextualNudge = ({ children }) => (
   <div className="mt-6 rounded-2xl border border-brand-100 bg-brand-50 px-4 py-3 text-sm text-brand-900 dark:border-cyan-900/60 dark:bg-cyan-950/30 dark:text-cyan-100">
     {children}
   </div>
-);
-
-const AuthPlaceholder = ({ title, description, linkLabel, linkTo }) => (
-  <div>
-    <PageHeader eyebrow="Account" title={title} description={description} />
-    {linkTo ? (
-      <Link
-        to={linkTo}
-        className="mt-6 inline-flex rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900"
-      >
-        {linkLabel}
-      </Link>
-    ) : null}
-  </div>
-);
-
-export const AcceptInvitePage = () => (
-  <AuthPlaceholder
-    title="Accept invitation"
-    description="Invitation acceptance will be implemented with the invitation flow."
-    linkLabel="Go to login"
-    linkTo="/login"
-  />
 );
 
 export const DashboardPage = () => (
