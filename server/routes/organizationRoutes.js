@@ -143,9 +143,10 @@ router.patch(
  *         application/json:
  *           schema:
  *             type: object
- *             required: [confirmName]
+ *             required: [confirmName, confirmPassword]
  *             properties:
  *               confirmName: { type: string, example: "Demo Org" }
+ *               confirmPassword: { type: string, format: password, example: "StrongPassword123" }
  *     responses:
  *       200:
  *         description: Organization deleted

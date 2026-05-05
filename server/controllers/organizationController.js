@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Membership from '../models/Membership.js';
 import Organization from '../models/Organization.js';
+import User from '../models/User.js';
 import { logActivity } from '../services/activityService.js';
 import { PLANS } from '../utils/constants.js';
 import { generateUniqueSlug } from '../utils/generateSlug.js';
@@ -163,6 +164,12 @@ export const deleteOrg = async (req, res, next) => {
   try {
     if (req.body.confirmName !== req.org.name) {
       throw createHttpError(400, 'Organization name confirmation does not match');
+    }
+
+    const owner = await User.findById(req.user._id).select('+password');
+
+    if (!owner || !(await owner.comparePassword(req.body.confirmPassword))) {
+      throw createHttpError(400, 'Password confirmation failed');
     }
 
     await session.withTransaction(async () => {

@@ -11,6 +11,7 @@ export { ActivityPage } from './activity/ActivityPage';
 export { BillingPage } from './billing/BillingPage';
 export { AcceptInvitePage } from './invite/AcceptInvitePage';
 export { MembersPage } from './members/MembersPage';
+export { OrgSettingsPage } from './settings/OrgSettingsPage';
 
 const ActiveUsersChart = lazy(() => import('../components/dashboard/ActiveUsersChart'));
 const GrowthChart = lazy(() => import('../components/dashboard/GrowthChart'));
@@ -317,10 +318,6 @@ export const DashboardPage = () => {
     </div>
   );
 };
-
-export const OrgSettingsPage = () => (
-  <DashboardPlaceholder title="Organization settings" description="Workspace profile and organization preferences will appear here." />
-);
 
 export const AccountSettingsPage = () => (
   <DashboardPlaceholder title="Account settings" description="Profile, avatar, and password settings will appear here." />

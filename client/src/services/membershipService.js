@@ -10,4 +10,4 @@ export const removeMember = (membershipId) => api.delete(`/memberships/${members
 
 export const leaveOrg = () => api.delete('/memberships/me');
 
-export const transferOwnership = (membershipId) => api.post(`/memberships/${membershipId}/transfer-ownership`);
+export const transferOwnership = (membershipId, payload) => api.post(`/memberships/${membershipId}/transfer-ownership`, payload);

@@ -38,4 +38,5 @@ export const updateOrgRules = [
 
 export const deleteOrgRules = [
   body('confirmName').trim().notEmpty().withMessage('Organization name confirmation is required').escape(),
+  body('confirmPassword').notEmpty().withMessage('Password confirmation is required'),
 ];

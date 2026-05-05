@@ -94,6 +94,47 @@ export const OrgProvider = ({ children }) => {
     [orgs],
   );
 
+  const replaceOrgLocally = useCallback((organization) => {
+    const organizationId = getOrgId(organization);
+
+    if (!organizationId) {
+      return;
+    }
+
+    setOrgs((currentOrgs) =>
+      currentOrgs.map((currentOrg) =>
+        getOrgId(currentOrg) === organizationId
+          ? {
+              ...currentOrg,
+              ...organization,
+              role: organization.role || currentOrg.role,
+            }
+          : currentOrg,
+      ),
+    );
+    setActiveOrg((currentOrg) =>
+      currentOrg && getOrgId(currentOrg) === organizationId
+        ? {
+            ...currentOrg,
+            ...organization,
+            role: organization.role || currentOrg.role,
+          }
+        : currentOrg,
+    );
+  }, []);
+
+  const removeOrgLocally = useCallback(
+    (orgId) => {
+      const nextOrgs = orgs.filter((organization) => getOrgId(organization) !== orgId);
+
+      setOrgs(nextOrgs);
+      applyActiveOrg(nextOrgs, null);
+
+      return nextOrgs;
+    },
+    [applyActiveOrg, orgs],
+  );
+
   const setActiveOrgFirstAvailable = useCallback(() => applyActiveOrg(orgs, null), [applyActiveOrg, orgs]);
 
   useEffect(() => {
@@ -124,9 +165,22 @@ export const OrgProvider = ({ children }) => {
       switchOrg,
       refreshOrgs,
       createOrg,
+      replaceOrgLocally,
+      removeOrgLocally,
       setActiveOrgFirstAvailable,
     }),
-    [activeOrg, createOrg, currentMembership, loading, orgs, refreshOrgs, setActiveOrgFirstAvailable, switchOrg],
+    [
+      activeOrg,
+      createOrg,
+      currentMembership,
+      loading,
+      orgs,
+      refreshOrgs,
+      removeOrgLocally,
+      replaceOrgLocally,
+      setActiveOrgFirstAvailable,
+      switchOrg,
+    ],
   );
 
   return <OrgContext.Provider value={value}>{children}</OrgContext.Provider>;
