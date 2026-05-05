@@ -128,8 +128,8 @@ const SidebarContent = ({ variant, onClose }) => {
   const navItems = variant === 'admin' ? adminNavItems : orgNavItems.filter((item) => item.isVisible(permissions));
 
   return (
-    <div className="flex h-full flex-col gap-6">
-      <div className="flex items-center justify-between">
+    <div className="flex h-full w-full min-w-0 flex-col gap-6 overflow-hidden">
+      <div className="flex min-w-0 items-center justify-between gap-2">
         <Brand variant={variant} />
         {onClose ? (
           <button
@@ -172,7 +172,7 @@ export const Sidebar = ({ variant = 'org', isMobileOpen = false, onClose }) => {
 
   return (
     <>
-      <aside className="hidden w-60 flex-none border-r border-gray-200 bg-white px-4 py-5 dark:border-slate-800 dark:bg-slate-950 md:fixed md:inset-y-0 md:left-0 md:flex">
+      <aside className="hidden w-60 flex-none overflow-hidden border-r border-gray-200 bg-white px-4 py-5 dark:border-slate-800 dark:bg-slate-950 md:fixed md:inset-y-0 md:left-0 md:flex">
         <SidebarContent variant={variant} />
       </aside>
 
@@ -184,7 +184,7 @@ export const Sidebar = ({ variant = 'org', isMobileOpen = false, onClose }) => {
             onClick={onClose}
             aria-label="Close navigation backdrop"
           />
-          <aside className="relative flex h-full w-72 max-w-[85vw] flex-col bg-white px-4 py-5 shadow-2xl dark:bg-slate-950">
+          <aside className="relative flex h-full w-72 max-w-[85vw] flex-col overflow-hidden bg-white px-4 py-5 shadow-2xl dark:bg-slate-950">
             <SidebarContent variant={variant} onClose={onClose} />
           </aside>
         </div>
