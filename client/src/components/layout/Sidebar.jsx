@@ -131,7 +131,7 @@ const SidebarContent = ({ variant, onClose }) => {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 lg:hidden"
+            className="rounded-full p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 md:hidden"
             aria-label="Close sidebar"
           >
             <X className="h-5 w-5" aria-hidden="true" />
@@ -168,12 +168,12 @@ export const Sidebar = ({ variant = 'org', isMobileOpen = false, onClose }) => {
 
   return (
     <>
-      <aside className="hidden w-60 flex-none border-r border-gray-200 bg-white px-4 py-5 dark:border-slate-800 dark:bg-slate-950 lg:fixed lg:inset-y-0 lg:left-0 lg:flex">
+      <aside className="hidden w-60 flex-none border-r border-gray-200 bg-white px-4 py-5 dark:border-slate-800 dark:bg-slate-950 md:fixed md:inset-y-0 md:left-0 md:flex">
         <SidebarContent variant={variant} />
       </aside>
 
       {isMobileOpen ? (
-        <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label="Navigation menu">
+        <div className="fixed inset-0 z-40 md:hidden" role="dialog" aria-modal="true" aria-label="Navigation menu">
           <button
             type="button"
             className="absolute inset-0 bg-slate-950/50"
