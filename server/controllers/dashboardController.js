@@ -131,7 +131,7 @@ export const getOverview = async (req, res, next) => {
       ActivityLog.find({ orgId: req.orgId })
         .populate({ path: 'actorId', select: 'name email avatar' })
         .sort({ createdAt: -1 })
-        .limit(5),
+        .limit(10),
     ]);
 
     return res.json({
