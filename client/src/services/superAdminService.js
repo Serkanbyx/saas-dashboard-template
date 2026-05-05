@@ -14,4 +14,6 @@ export const forceDeleteOrg = (orgId, payload) => api.delete(`/super-admin/orgs/
 
 export const listAllUsers = (params) => api.get('/super-admin/users', { params });
 
+export const getUserMemberships = (userId) => api.get(`/super-admin/users/${userId}/memberships`);
+
 export const updateUserStatus = (userId, payload) => api.patch(`/super-admin/users/${userId}`, payload);

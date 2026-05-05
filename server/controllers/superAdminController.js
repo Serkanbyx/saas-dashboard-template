@@ -35,6 +35,23 @@ const isSameId = (firstId, secondId) => firstId?.toString() === secondId?.toStri
 const getThirtyDaysAgo = () => new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 const getTwentyFourHoursAgo = () => new Date(Date.now() - 24 * 60 * 60 * 1000);
 
+const getDateKey = (date) => date.toISOString().slice(0, 10);
+
+const getDailySeries = ({ rows, startDate, days }) => {
+  const countsByDate = rows.reduce((counts, row) => counts.set(row._id, row.count), new Map());
+
+  return Array.from({ length: days }, (_item, index) => {
+    const date = new Date(startDate);
+    date.setUTCDate(startDate.getUTCDate() + index);
+    const dateKey = getDateKey(date);
+
+    return {
+      date: dateKey,
+      value: countsByDate.get(dateKey) || 0,
+    };
+  });
+};
+
 const getSearchFilter = (search, fields) => {
   if (!search) return {};
 
@@ -138,8 +155,8 @@ const deleteOrgCascade = async ({ orgId, session }) => {
 };
 
 const assertCanUpdateUser = async ({ currentUser, targetUser, updates }) => {
-  if (isSameId(currentUser._id, targetUser._id) && updates.isActive === false) {
-    throw createHttpError(400, 'Cannot deactivate your own account');
+  if (isSameId(currentUser._id, targetUser._id) && Object.keys(updates).length > 0) {
+    throw createHttpError(400, 'Cannot update your own super admin account');
   }
 
   const activeSuperAdminCount = await User.countDocuments({ platformRole: 'superadmin', isActive: true });
@@ -150,14 +167,6 @@ const assertCanUpdateUser = async ({ currentUser, targetUser, updates }) => {
 
   if ((demotesSuperAdmin || deactivatesSuperAdmin) && activeSuperAdminCount <= 1) {
     throw createHttpError(400, 'Cannot demote or deactivate the last super admin');
-  }
-
-  if (
-    targetUser.platformRole === 'superadmin' &&
-    !isSameId(currentUser._id, targetUser._id) &&
-    activeSuperAdminCount > 1
-  ) {
-    throw createHttpError(403, 'Cannot edit another super admin while multiple super admins are active');
   }
 };
 
@@ -179,14 +188,44 @@ export const getPlatformStats = async (_req, res, next) => {
   try {
     const thirtyDaysAgo = getThirtyDaysAgo();
     const twentyFourHoursAgo = getTwentyFourHoursAgo();
+    const signupTrendStart = new Date();
+    signupTrendStart.setUTCDate(signupTrendStart.getUTCDate() - 29);
+    signupTrendStart.setUTCHours(0, 0, 0, 0);
 
-    const [totalUsers, totalOrgs, totalMemberships, planRows, signupsLast30d, activityLast24h] = await Promise.all([
+    const [
+      totalUsers,
+      totalOrgs,
+      totalMemberships,
+      activeSubscriptions,
+      planRows,
+      signupsLast30d,
+      signupRows,
+      activityLast24h,
+      recentActivity,
+    ] = await Promise.all([
       User.countDocuments(),
       Organization.countDocuments(),
       Membership.countDocuments(),
-      Organization.aggregate([{ $group: { _id: '$plan', count: { $sum: 1 } } }]),
+      Organization.countDocuments({ plan: 'pro', isDeleted: false }),
+      Organization.aggregate([{ $match: { isDeleted: false } }, { $group: { _id: '$plan', count: { $sum: 1 } } }]),
       User.countDocuments({ createdAt: { $gte: thirtyDaysAgo } }),
+      User.aggregate([
+        { $match: { createdAt: { $gte: signupTrendStart } } },
+        {
+          $group: {
+            _id: { $dateToString: { date: '$createdAt', format: '%Y-%m-%d' } },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]),
       ActivityLog.countDocuments({ createdAt: { $gte: twentyFourHoursAgo } }),
+      ActivityLog.find()
+        .populate({ path: 'actorId', select: 'name email avatar' })
+        .populate({ path: 'orgId', select: 'name slug plan isDeleted' })
+        .sort({ createdAt: -1 })
+        .limit(12)
+        .lean(),
     ]);
 
     return res.json({
@@ -195,9 +234,12 @@ export const getPlatformStats = async (_req, res, next) => {
         totalUsers,
         totalOrgs,
         totalMemberships,
+        activeSubscriptions,
         planBreakdown: getNormalizedPlanBreakdown(planRows),
         signupsLast30d,
+        signupTrend: getDailySeries({ rows: signupRows, startDate: signupTrendStart, days: 30 }),
         activityLast24h,
+        recentActivity,
       },
     });
   } catch (error) {
@@ -402,13 +444,14 @@ export const listAllUsers = async (req, res, next) => {
     const { page, limit } = getPagination(req.query);
     const filter = getUserFilter(req.query);
 
-    const [users, total] = await Promise.all([
+    const [users, total, activeSuperAdminCount] = await Promise.all([
       User.find(filter)
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
         .lean(),
       User.countDocuments(filter),
+      User.countDocuments({ platformRole: 'superadmin', isActive: true }),
     ]);
     const membershipCountsByUserId = await getMembershipCountsByUserId(users.map((user) => user._id));
 
@@ -425,6 +468,32 @@ export const listAllUsers = async (req, res, next) => {
           total,
           totalPages: getTotalPages(total, limit),
         },
+        activeSuperAdminCount,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getUserMemberships = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.userId).select('name email avatar platformRole isActive').lean();
+
+    if (!user) {
+      throw createHttpError(404, 'User not found');
+    }
+
+    const memberships = await Membership.find({ userId: req.params.userId })
+      .populate({ path: 'orgId', select: 'name slug plan isDeleted createdAt' })
+      .sort({ joinedAt: -1 })
+      .lean();
+
+    return res.json({
+      success: true,
+      data: {
+        user,
+        memberships,
       },
     });
   } catch (error) {

@@ -3,6 +3,7 @@ import {
   forceDeleteOrg,
   getOrgDetails,
   getPlatformStats,
+  getUserMemberships,
   listAllOrgs,
   listAllUsers,
   restoreOrg,
@@ -179,6 +180,27 @@ router.delete('/orgs/:orgId', forceDeleteOrgRules, validate, forceDeleteOrg);
  *         description: Super admin access required
  */
 router.get('/users', listAllUsersRules, validate, listAllUsers);
+
+/**
+ * @openapi
+ * /super-admin/users/{userId}/memberships:
+ *   get:
+ *     summary: List a user's organization memberships
+ *     tags: [Super Admin]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: User memberships
+ *       403:
+ *         description: Super admin access required
+ *       404:
+ *         description: User not found
+ */
+router.get('/users/:userId/memberships', userIdParamRule, validate, getUserMemberships);
 
 /**
  * @openapi

@@ -13,6 +13,7 @@ export { AcceptInvitePage } from './invite/AcceptInvitePage';
 export { MembersPage } from './members/MembersPage';
 export { AccountSettingsPage } from './settings/AccountSettingsPage';
 export { OrgSettingsPage } from './settings/OrgSettingsPage';
+export { AllOrgsPage, AllUsersPage, SuperAdminDashboardPage } from './super-admin/SuperAdminPages';
 
 const ActiveUsersChart = lazy(() => import('../components/dashboard/ActiveUsersChart'));
 const GrowthChart = lazy(() => import('../components/dashboard/GrowthChart'));
@@ -24,13 +25,6 @@ const PageHeader = ({ eyebrow, title, description }) => (
     <h2 className="mt-3 text-2xl font-semibold tracking-tight text-gray-950 dark:text-slate-50">{title}</h2>
     <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600 dark:text-slate-300">{description}</p>
   </div>
-);
-
-const DashboardPlaceholder = ({ children, title, description }) => (
-  <section className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm transition-colors dark:border-slate-800 dark:bg-slate-900">
-    <PageHeader eyebrow="SaaS Dashboard" title={title} description={description} />
-    {children}
-  </section>
 );
 
 const getOrgId = (org) => org?._id || org?.id;
@@ -319,18 +313,6 @@ export const DashboardPage = () => {
     </div>
   );
 };
-
-export const SuperAdminDashboardPage = () => (
-  <DashboardPlaceholder title="Super admin dashboard" description="Platform-wide stats and operational signals will appear here." />
-);
-
-export const AllOrgsPage = () => (
-  <DashboardPlaceholder title="All organizations" description="Super admins will review and manage organizations here." />
-);
-
-export const AllUsersPage = () => (
-  <DashboardPlaceholder title="All users" description="Super admins will review and manage platform users here." />
-);
 
 export const ForbiddenPage = () => (
   <section className="rounded-3xl border border-amber-200 bg-amber-50 p-6 text-amber-950 shadow-sm dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100">
