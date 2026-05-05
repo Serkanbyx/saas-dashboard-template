@@ -6,6 +6,7 @@ import { ThemeToggle } from '../common/ThemeToggle';
 import { NotificationBell } from './NotificationBell';
 
 const titleByPathSegment = {
+  account: 'Account Settings',
   activity: 'Activity',
   billing: 'Billing',
   dashboard: 'Dashboard',

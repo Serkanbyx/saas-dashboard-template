@@ -11,6 +11,7 @@ export { ActivityPage } from './activity/ActivityPage';
 export { BillingPage } from './billing/BillingPage';
 export { AcceptInvitePage } from './invite/AcceptInvitePage';
 export { MembersPage } from './members/MembersPage';
+export { AccountSettingsPage } from './settings/AccountSettingsPage';
 export { OrgSettingsPage } from './settings/OrgSettingsPage';
 
 const ActiveUsersChart = lazy(() => import('../components/dashboard/ActiveUsersChart'));
@@ -318,10 +319,6 @@ export const DashboardPage = () => {
     </div>
   );
 };
-
-export const AccountSettingsPage = () => (
-  <DashboardPlaceholder title="Account settings" description="Profile, avatar, and password settings will appear here." />
-);
 
 export const SuperAdminDashboardPage = () => (
   <DashboardPlaceholder title="Super admin dashboard" description="Platform-wide stats and operational signals will appear here." />

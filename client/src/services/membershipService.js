@@ -8,6 +8,7 @@ export const updateMemberRole = (membershipId, payload) => api.patch(`/membershi
 
 export const removeMember = (membershipId) => api.delete(`/memberships/${membershipId}`);
 
-export const leaveOrg = () => api.delete('/memberships/me');
+export const leaveOrg = (orgId) =>
+  api.delete('/memberships/me', orgId ? { headers: { 'x-org-id': orgId } } : undefined);
 
 export const transferOwnership = (membershipId, payload) => api.post(`/memberships/${membershipId}/transfer-ownership`, payload);
