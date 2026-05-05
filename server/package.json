@@ -2,6 +2,10 @@
   "name": "saas-dashboard-server",
   "version": "1.0.0",
   "private": true,
+  "author": {
+    "name": "Serkanby",
+    "url": "https://serkanbayraktar.com/"
+  },
   "type": "module",
   "scripts": {
     "dev": "nodemon index.js | pino-pretty",

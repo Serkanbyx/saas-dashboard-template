@@ -1,5 +1,8 @@
 # SaaS Dashboard Template
 
+[![Created by Serkanby](https://img.shields.io/badge/Created%20by-Serkanby-blue?style=flat-square)](https://serkanbayraktar.com/)
+[![GitHub](https://img.shields.io/badge/GitHub-Serkanbyx-181717?style=flat-square&logo=github)](https://github.com/Serkanbyx)
+
 Multi-tenant React + Node SaaS starter with organizations, memberships, RBAC, invitations, mock billing, real-time notifications, dark mode, and a super admin area.
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
@@ -319,6 +322,20 @@ Billing is mock-only. It models plans, invoices, and billing history for dashboa
 2. Keep changes focused and reusable.
 3. Run server and client tests before opening a pull request.
 4. Document new environment variables, routes, and setup steps.
+
+## Developer
+
+**Serkanby**
+
+- Website: [serkanbayraktar.com](https://serkanbayraktar.com/)
+- GitHub: [@Serkanbyx](https://github.com/Serkanbyx)
+- Email: [serkanbyx1@gmail.com](mailto:serkanbyx1@gmail.com)
+
+## Contact
+
+- [Open an Issue](https://github.com/Serkanbyx/s4.18_SaaS-Dashboard-Template/issues)
+- Email: [serkanbyx1@gmail.com](mailto:serkanbyx1@gmail.com)
+- Website: [serkanbayraktar.com](https://serkanbayraktar.com/)
 
 ## License
 

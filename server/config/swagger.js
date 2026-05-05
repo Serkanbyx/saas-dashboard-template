@@ -1,12 +1,20 @@
 import swaggerJsdoc from 'swagger-jsdoc';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+const { version } = require('../package.json');
 
 const options = {
   definition: {
     openapi: '3.0.3',
     info: {
       title: 'SaaS Dashboard Template API',
-      version: '1.0.0',
+      version,
       description: 'Multi-tenant SaaS API with RBAC, invitations, billing, and real-time notifications.',
+      contact: {
+        name: 'Serkanby',
+        url: 'https://serkanbayraktar.com/',
+      },
     },
     servers: [{ url: '/api' }],
     components: {
