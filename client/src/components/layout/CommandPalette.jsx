@@ -195,7 +195,7 @@ const ResultOption = ({ active, item, optionId, query, onClick }) => {
   );
 };
 
-export const CommandPalette = () => {
+export const CommandPalette = ({ openRequestId = 0 }) => {
   const navigate = useNavigate();
   const dialogRef = useRef(null);
   const inputRef = useRef(null);
@@ -229,6 +229,12 @@ export const CommandPalette = () => {
   }, []);
 
   useHotkey('mod+k', openPalette);
+
+  useEffect(() => {
+    if (openRequestId > 0) {
+      openPalette();
+    }
+  }, [openPalette, openRequestId]);
 
   useEffect(() => {
     const handleOpen = () => openPalette();

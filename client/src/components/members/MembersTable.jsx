@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { MoreHorizontal, Search } from 'lucide-react';
 import { Avatar, RoleBadge, Spinner } from '../common';
 
@@ -21,7 +22,7 @@ const formatDate = (value) => {
 
 const formatRole = (role) => (role ? role.charAt(0).toUpperCase() + role.slice(1) : 'Member');
 
-export const MembersTable = ({
+export const MembersTable = memo(({
   actionMembershipId,
   currentUser,
   focusedMembershipId = '',
@@ -275,4 +276,6 @@ export const MembersTable = ({
       </div>
     </section>
   );
-};
+});
+
+MembersTable.displayName = 'MembersTable';

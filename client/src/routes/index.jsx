@@ -3,7 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Spinner } from '../components/common/Spinner';
 import { useAuth } from '../hooks/useAuth';
 import { useOrg } from '../hooks/useOrg';
-import { ForbiddenPage } from '../pages';
+import { ForbiddenPage } from '../pages/error/ForbiddenPage';
 
 const getNextRedirect = (location) => {
   const nextPath = `${location.pathname}${location.search}${location.hash}`;

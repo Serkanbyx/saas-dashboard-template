@@ -353,14 +353,14 @@ export const MembersPage = () => {
     }, 0);
   }, [activeTab, focusedRecordId, isLoadingMembers, isLoadingOverview]);
 
-  const closeInviteModal = () => {
+  const closeInviteModal = useCallback(() => {
     setIsInviteModalOpen(false);
     if (searchParams.get('invite')) {
       navigate('/app/members', { replace: true });
     }
-  };
+  }, [navigate, searchParams]);
 
-  const handleInviteMember = async (payload) => {
+  const handleInviteMember = useCallback(async (payload) => {
     setIsInviting(true);
 
     try {
@@ -373,9 +373,9 @@ export const MembersPage = () => {
     } finally {
       setIsInviting(false);
     }
-  };
+  }, [closeInviteModal, refreshMembersPage]);
 
-  const handleRoleChange = async (membership, role) => {
+  const handleRoleChange = useCallback(async (membership, role) => {
     const membershipId = getRecordId(membership);
     const previousMembers = members;
 
@@ -394,9 +394,9 @@ export const MembersPage = () => {
     } finally {
       setActionMembershipId('');
     }
-  };
+  }, [loadOverview, members]);
 
-  const handleRemoveMember = async (membership) => {
+  const handleRemoveMember = useCallback(async (membership) => {
     const membershipId = getRecordId(membership);
     const previousMembers = members;
     const previousOverview = overview;
@@ -430,9 +430,9 @@ export const MembersPage = () => {
     } finally {
       setActionMembershipId('');
     }
-  };
+  }, [members, overview, refreshMembersPage]);
 
-  const handleResendInvitation = async (invitation) => {
+  const handleResendInvitation = useCallback(async (invitation) => {
     const invitationId = getRecordId(invitation);
     setActionInvitationId(invitationId);
 
@@ -445,9 +445,9 @@ export const MembersPage = () => {
     } finally {
       setActionInvitationId('');
     }
-  };
+  }, [loadOverview]);
 
-  const handleRevokeInvitation = async (invitation) => {
+  const handleRevokeInvitation = useCallback(async (invitation) => {
     const invitationId = getRecordId(invitation);
     const previousOverview = overview;
 
@@ -475,7 +475,7 @@ export const MembersPage = () => {
     } finally {
       setActionInvitationId('');
     }
-  };
+  }, [loadOverview, overview]);
 
   return (
     <div className="space-y-6">

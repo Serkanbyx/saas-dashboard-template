@@ -1,23 +1,39 @@
-import { useCallback, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { Spinner } from '../components/common/Spinner';
-import { CommandPalette } from '../components/layout/CommandPalette';
 import { Sidebar } from '../components/layout/Sidebar';
 import { Topbar } from '../components/layout/Topbar';
 import { OnboardingWizard } from '../components/onboarding/OnboardingWizard';
 import { useAuth } from '../hooks/useAuth';
+import { useHotkey } from '../hooks/useHotkey';
 import { useOrg } from '../hooks/useOrg';
+
+const CommandPalette = lazy(() => import('../components/layout/CommandPalette').then((module) => ({ default: module.CommandPalette })));
 
 export const OrgLayout = () => {
   const { user } = useAuth() || {};
   const { currentMembership, isSwitchingOrg } = useOrg() || {};
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isCommandPaletteLoaded, setIsCommandPaletteLoaded] = useState(false);
+  const [commandPaletteOpenRequestId, setCommandPaletteOpenRequestId] = useState(0);
   const [isOnboardingDismissed, setIsOnboardingDismissed] = useState(false);
   const closeSidebar = useCallback(() => setIsSidebarOpen(false), []);
   const openSidebar = useCallback(() => setIsSidebarOpen(true), []);
+  const openCommandPalette = useCallback(() => {
+    setIsCommandPaletteLoaded(true);
+    setCommandPaletteOpenRequestId((currentRequestId) => currentRequestId + 1);
+  }, []);
   const showOnboarding =
     user && !user.hasCompletedOnboarding && currentMembership?.role === 'owner' && !isOnboardingDismissed;
+
+  useHotkey('mod+k', openCommandPalette);
+
+  useEffect(() => {
+    window.addEventListener('command-palette:open', openCommandPalette);
+
+    return () => window.removeEventListener('command-palette:open', openCommandPalette);
+  }, [openCommandPalette]);
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
@@ -41,7 +57,11 @@ export const OrgLayout = () => {
           </div>
         </div>
       ) : null}
-      <CommandPalette />
+      {isCommandPaletteLoaded ? (
+        <Suspense fallback={null}>
+          <CommandPalette openRequestId={commandPaletteOpenRequestId} />
+        </Suspense>
+      ) : null}
       {showOnboarding ? <OnboardingWizard onCompleted={() => setIsOnboardingDismissed(true)} /> : null}
     </div>
   );

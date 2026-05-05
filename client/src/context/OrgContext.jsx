@@ -94,7 +94,7 @@ export const OrgProvider = ({ children }) => {
       setIsSwitchingOrg(true);
 
       try {
-        const response = await organizationService.getMyOrgs();
+        const response = await organizationService.getMyOrgs({ force: true });
         const organizations = response.data?.data?.organizations || [];
 
         setOrgs(organizations);
@@ -113,6 +113,7 @@ export const OrgProvider = ({ children }) => {
       return;
     }
 
+    organizationService.invalidateMyOrgsCache();
     setOrgs((currentOrgs) =>
       currentOrgs.map((currentOrg) =>
         getOrgId(currentOrg) === organizationId
@@ -137,6 +138,7 @@ export const OrgProvider = ({ children }) => {
 
   const removeOrgLocally = useCallback(
     (orgId) => {
+      organizationService.invalidateMyOrgsCache();
       const nextOrgs = orgs.filter((organization) => getOrgId(organization) !== orgId);
 
       setOrgs(nextOrgs);

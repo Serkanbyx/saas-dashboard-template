@@ -1,11 +1,49 @@
 import api from '../api/axiosInstance';
 
-export const createOrg = (payload) => api.post('/organizations', payload);
+const myOrgsCache = {
+  response: null,
+  timestamp: 0,
+};
+const myOrgsCacheTtl = 30_000;
 
-export const getMyOrgs = () => api.get('/organizations/mine');
+export const invalidateMyOrgsCache = () => {
+  myOrgsCache.response = null;
+  myOrgsCache.timestamp = 0;
+};
+
+export const createOrg = async (payload) => {
+  const response = await api.post('/organizations', payload);
+  invalidateMyOrgsCache();
+
+  return response;
+};
+
+export const getMyOrgs = async ({ force = false } = {}) => {
+  const isFresh = myOrgsCache.response && Date.now() - myOrgsCache.timestamp < myOrgsCacheTtl;
+
+  if (!force && isFresh) {
+    return myOrgsCache.response;
+  }
+
+  const response = await api.get('/organizations/mine');
+  myOrgsCache.response = response;
+  myOrgsCache.timestamp = Date.now();
+
+  return response;
+};
 
 export const getOrgById = (orgId) => api.get(`/organizations/${orgId}`);
 
-export const updateOrg = (orgId, payload) => api.patch(`/organizations/${orgId}`, payload);
+export const updateOrg = async (orgId, payload) => {
+  const response = await api.patch(`/organizations/${orgId}`, payload);
+  invalidateMyOrgsCache();
 
-export const deleteOrg = (orgId, payload) => api.delete(`/organizations/${orgId}`, { data: payload });
+  return response;
+};
+
+export const deleteOrg = async (orgId, payload) => {
+  const response = await api.delete(`/organizations/${orgId}`, { data: payload });
+  invalidateMyOrgsCache();
+
+  return response;
+};

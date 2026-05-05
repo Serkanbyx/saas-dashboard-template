@@ -1,4 +1,5 @@
-﻿import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+﻿import { lazy, Suspense } from 'react';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { AuthProvider } from './context/AuthContext';
@@ -7,26 +8,32 @@ import { OrgProvider } from './context/OrgContext';
 import { SocketProvider } from './context/SocketContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AdminLayout, AuthLayout, OrgLayout } from './layouts';
-import {
-  AcceptInvitePage,
-  AccountSettingsPage,
-  ActivityPage,
-  AllOrgsPage,
-  AllUsersPage,
-  BillingPage,
-  CreateOrgPage,
-  DashboardPage,
-  LoginPage,
-  MembersPage,
-  NotFoundPage,
-  OrgSettingsPage,
-  RegisterPage,
-  SuperAdminDashboardPage,
-} from './pages';
-import { GuestOnlyRoute, OrgRoleRoute, ProtectedRoute, SuperAdminRoute } from './routes';
+import { GuestOnlyRoute, OrgRoleRoute, ProtectedRoute, RouteLoader, SuperAdminRoute } from './routes';
+
+const lazyNamedPage = (loader, exportName) =>
+  lazy(() => loader().then((module) => ({ default: module[exportName] })));
+
+const AcceptInvitePage = lazyNamedPage(() => import('./pages/invite/AcceptInvitePage.jsx'), 'AcceptInvitePage');
+const AccountSettingsPage = lazyNamedPage(() => import('./pages/settings/AccountSettingsPage.jsx'), 'AccountSettingsPage');
+const ActivityPage = lazyNamedPage(() => import('./pages/activity/ActivityPage.jsx'), 'ActivityPage');
+const AllOrgsPage = lazyNamedPage(() => import('./pages/super-admin/SuperAdminPages.jsx'), 'AllOrgsPage');
+const AllUsersPage = lazyNamedPage(() => import('./pages/super-admin/SuperAdminPages.jsx'), 'AllUsersPage');
+const BillingPage = lazyNamedPage(() => import('./pages/billing/BillingPage.jsx'), 'BillingPage');
+const CreateOrgPage = lazyNamedPage(() => import('./pages/AuthPages.jsx'), 'CreateOrgPage');
+const DashboardPage = lazyNamedPage(() => import('./pages/dashboard/DashboardPage.jsx'), 'DashboardPage');
+const LoginPage = lazyNamedPage(() => import('./pages/AuthPages.jsx'), 'LoginPage');
+const MembersPage = lazyNamedPage(() => import('./pages/members/MembersPage.jsx'), 'MembersPage');
+const NotFoundPage = lazyNamedPage(() => import('./pages/error/NotFoundPage.jsx'), 'NotFoundPage');
+const OrgSettingsPage = lazyNamedPage(() => import('./pages/settings/OrgSettingsPage.jsx'), 'OrgSettingsPage');
+const RegisterPage = lazyNamedPage(() => import('./pages/AuthPages.jsx'), 'RegisterPage');
+const SuperAdminDashboardPage = lazyNamedPage(
+  () => import('./pages/super-admin/SuperAdminPages.jsx'),
+  'SuperAdminDashboardPage',
+);
 
 const AppRoutes = () => (
-  <Routes>
+  <Suspense fallback={<RouteLoader label="Loading page" />}>
+    <Routes>
     <Route element={<GuestOnlyRoute />}>
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<LoginPage />} />
@@ -82,7 +89,8 @@ const AppRoutes = () => (
     </Route>
 
     <Route path="*" element={<NotFoundPage />} />
-  </Routes>
+    </Routes>
+  </Suspense>
 );
 
 const App = () => {

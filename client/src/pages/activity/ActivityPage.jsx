@@ -1,5 +1,5 @@
 import { Activity, CalendarDays, Filter, Loader2, RefreshCw, X } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Avatar, EmptyState } from '../../components/common';
 import { useOrg } from '../../hooks/useOrg';
@@ -90,7 +90,7 @@ const ActivitySkeleton = () => (
   </div>
 );
 
-const FiltersBar = ({ actorId, endDate, members, onActionToggle, onClearFilters, onFilterChange, selectedActions, startDate }) => {
+const FiltersBar = memo(({ actorId, endDate, members, onActionToggle, onClearFilters, onFilterChange, selectedActions, startDate }) => {
   const hasFilters = selectedActions.length > 0 || actorId || startDate || endDate;
 
   return (
@@ -191,20 +191,26 @@ const FiltersBar = ({ actorId, endDate, members, onActionToggle, onClearFilters,
       </div>
     </section>
   );
-};
+});
 
-const ActivityTimeline = ({ activities, highlightedIds }) => {
-  const groups = activities.reduce((dayGroups, activityLog) => {
-    const day = formatDay(activityLog.createdAt);
-    const group = dayGroups.find((currentGroup) => currentGroup.day === day);
+FiltersBar.displayName = 'FiltersBar';
 
-    if (group) {
-      group.activities.push(activityLog);
-      return dayGroups;
-    }
+const ActivityTimeline = memo(({ activities, highlightedIds }) => {
+  const groups = useMemo(
+    () =>
+      activities.reduce((dayGroups, activityLog) => {
+        const day = formatDay(activityLog.createdAt);
+        const group = dayGroups.find((currentGroup) => currentGroup.day === day);
 
-    return [...dayGroups, { day, activities: [activityLog] }];
-  }, []);
+        if (group) {
+          group.activities.push(activityLog);
+          return dayGroups;
+        }
+
+        return [...dayGroups, { day, activities: [activityLog] }];
+      }, []),
+    [activities],
+  );
 
   return (
     <div className="space-y-6">
@@ -255,7 +261,9 @@ const ActivityTimeline = ({ activities, highlightedIds }) => {
       ))}
     </div>
   );
-};
+});
+
+ActivityTimeline.displayName = 'ActivityTimeline';
 
 export const ActivityPage = () => {
   const [searchParams] = useSearchParams();
@@ -387,22 +395,22 @@ export const ActivityPage = () => {
     }, 0);
   }, [focusedActivityId, isLoading]);
 
-  const handleFilterChange = (name, value) => {
+  const handleFilterChange = useCallback((name, value) => {
     setFilters((currentFilters) => ({ ...currentFilters, [name]: value }));
-  };
+  }, []);
 
-  const handleActionToggle = (action) => {
+  const handleActionToggle = useCallback((action) => {
     setFilters((currentFilters) => ({
       ...currentFilters,
       actions: currentFilters.actions.includes(action)
         ? currentFilters.actions.filter((currentAction) => currentAction !== action)
         : [...currentFilters.actions, action],
     }));
-  };
+  }, []);
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setFilters({ actions: [], actorId: '', startDate: '', endDate: '' });
-  };
+  }, []);
 
   return (
     <div className="space-y-6">
