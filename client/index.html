@@ -4,6 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SaaS Dashboard Template</title>
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem('saas:theme') || 'system';
+          var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var isDark = theme === 'dark' || (theme === 'system' && prefersDark);
+
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (error) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
