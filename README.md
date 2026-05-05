@@ -61,54 +61,46 @@ The deployed frontend runs on Netlify and connects to the deployed API configure
 
 ## Screenshots
 
-All screenshots are captured from the [live deployment](https://saas-dashboard-template.netlify.app/) running against the seeded demo dataset.
+All screenshots are captured from the [live deployment](https://saas-dashboard-template.netlify.app/) with a real test user workspace.
 
 <table>
   <tr>
-    <td align="center" width="33%">
+    <td align="center" width="25%">
       <a href="./assets/screenshots/create-org.png"><img src="./assets/screenshots/create-org.png" alt="Create organization" /></a>
       <sub><b>Onboarding</b><br/>Workspace creation wizard</sub>
     </td>
-    <td align="center" width="33%">
+    <td align="center" width="25%">
       <a href="./assets/screenshots/dashboard.png"><img src="./assets/screenshots/dashboard.png" alt="Dashboard" /></a>
       <sub><b>Dashboard</b><br/>KPIs, charts, and activity</sub>
     </td>
-    <td align="center" width="33%">
+    <td align="center" width="25%">
       <a href="./assets/screenshots/members.png"><img src="./assets/screenshots/members.png" alt="Members" /></a>
       <sub><b>Members</b><br/>Roles, invites, and seats</sub>
     </td>
-  </tr>
-  <tr>
-    <td align="center" width="33%">
+    <td align="center" width="25%">
       <a href="./assets/screenshots/activity.png"><img src="./assets/screenshots/activity.png" alt="Activity" /></a>
       <sub><b>Activity</b><br/>Filtered workspace timeline</sub>
     </td>
-    <td align="center" width="33%">
+  </tr>
+  <tr>
+    <td align="center" width="25%">
       <a href="./assets/screenshots/billing.png"><img src="./assets/screenshots/billing.png" alt="Billing" /></a>
       <sub><b>Billing</b><br/>Plans, seats, and invoices</sub>
     </td>
-    <td align="center" width="33%">
+    <td align="center" width="25%">
       <a href="./assets/screenshots/notifications.png"><img src="./assets/screenshots/notifications.png" alt="Notifications" /></a>
       <sub><b>Notifications</b><br/>Workspace update inbox</sub>
     </td>
-  </tr>
-  <tr>
-    <td align="center" width="33%">
+    <td align="center" width="25%">
       <a href="./assets/screenshots/organization-settings.png"><img src="./assets/screenshots/organization-settings.png" alt="Organization settings" /></a>
       <sub><b>Organization</b><br/>Branding and owner controls</sub>
     </td>
-    <td align="center" width="33%">
+    <td align="center" width="25%">
       <a href="./assets/screenshots/account-settings.png"><img src="./assets/screenshots/account-settings.png" alt="Account settings" /></a>
       <sub><b>Account</b><br/>Profile, password, and theme</sub>
     </td>
-    <td align="center" width="33%">
-      <a href="./assets/screenshots/super-admin-dashboard.png"><img src="./assets/screenshots/super-admin-dashboard.png" alt="Super admin dashboard" /></a>
-      <sub><b>Admin</b><br/>Platform metrics and oversight</sub>
-    </td>
   </tr>
 </table>
-
-> Bonus operator views - `super-admin-organizations.png` and `super-admin-users.png` - also live in `assets/screenshots/` for reference.
 
 ---
 
