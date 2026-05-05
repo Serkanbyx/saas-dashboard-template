@@ -1,14 +1,15 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { Activity as ActivityIcon, DollarSign, UserPlus, Users } from 'lucide-react';
 import { ErrorBoundary } from '../../components/common/ErrorBoundary';
 import { useAuth } from '../../hooks/useAuth';
 import { useOrg } from '../../hooks/useOrg';
 import * as dashboardService from '../../services/dashboardService';
 import { formatActivity } from '../../utils/activityFormatter';
+import { lazyWithChunkRetry } from '../../utils/lazyWithChunkRetry';
 
-const ActiveUsersChart = lazy(() => import('../../components/dashboard/ActiveUsersChart'));
-const GrowthChart = lazy(() => import('../../components/dashboard/GrowthChart'));
-const RevenueChart = lazy(() => import('../../components/dashboard/RevenueChart'));
+const ActiveUsersChart = lazyWithChunkRetry(() => import('../../components/dashboard/ActiveUsersChart'));
+const GrowthChart = lazyWithChunkRetry(() => import('../../components/dashboard/GrowthChart'));
+const RevenueChart = lazyWithChunkRetry(() => import('../../components/dashboard/RevenueChart'));
 
 const getOrgId = (org) => org?._id || org?.id;
 

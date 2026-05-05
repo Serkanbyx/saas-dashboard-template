@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { Spinner } from '../components/common/Spinner';
@@ -8,8 +8,9 @@ import { OnboardingWizard } from '../components/onboarding/OnboardingWizard';
 import { useAuth } from '../hooks/useAuth';
 import { useHotkey } from '../hooks/useHotkey';
 import { useOrg } from '../hooks/useOrg';
+import { lazyWithChunkRetry } from '../utils/lazyWithChunkRetry';
 
-const CommandPalette = lazy(() => import('../components/layout/CommandPalette').then((module) => ({ default: module.CommandPalette })));
+const CommandPalette = lazyWithChunkRetry(() => import('../components/layout/CommandPalette').then((module) => ({ default: module.CommandPalette })));
 
 export const OrgLayout = () => {
   const { user } = useAuth() || {};

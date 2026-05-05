@@ -69,7 +69,7 @@ const clientRouteRewrites = {
 
 const allowedClientPathPrefixes = ['/app', '/create-org', '/invite/accept', '/invitations/accept', '/login', '/register', '/super-admin'];
 
-const formatNotificationTime = (value) => {
+export const formatNotificationTime = (value) => {
   if (!value) {
     return '';
   }
@@ -99,9 +99,9 @@ const formatNotificationTime = (value) => {
   return relativeTimeFormatter.format(Math.round(diffInSeconds / (60 * 60 * 24 * 365)), 'year');
 };
 
-const getNotificationConfig = (type) => notificationTypeConfig[type] || fallbackNotificationConfig;
+export const getNotificationConfig = (type) => notificationTypeConfig[type] || fallbackNotificationConfig;
 
-const getSafeNotificationPath = (link) => {
+export const getSafeNotificationPath = (link) => {
   if (typeof link !== 'string' || !link.startsWith('/') || link.startsWith('//')) {
     return null;
   }

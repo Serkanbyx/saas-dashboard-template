@@ -1,4 +1,4 @@
-﻿import { lazy, Suspense } from 'react';
+﻿import { Suspense } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
@@ -9,9 +9,10 @@ import { SocketProvider } from './context/SocketContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AdminLayout, AuthLayout, OrgLayout } from './layouts';
 import { GuestOnlyRoute, OrgRoleRoute, ProtectedRoute, RouteLoader, SuperAdminRoute } from './routes';
+import { lazyWithChunkRetry } from './utils/lazyWithChunkRetry';
 
 const lazyNamedPage = (loader, exportName) =>
-  lazy(() => loader().then((module) => ({ default: module[exportName] })));
+  lazyWithChunkRetry(() => loader().then((module) => ({ default: module[exportName] })));
 
 const AcceptInvitePage = lazyNamedPage(() => import('./pages/invite/AcceptInvitePage.jsx'), 'AcceptInvitePage');
 const AccountSettingsPage = lazyNamedPage(() => import('./pages/settings/AccountSettingsPage.jsx'), 'AccountSettingsPage');
@@ -24,6 +25,7 @@ const DashboardPage = lazyNamedPage(() => import('./pages/dashboard/DashboardPag
 const LoginPage = lazyNamedPage(() => import('./pages/AuthPages.jsx'), 'LoginPage');
 const MembersPage = lazyNamedPage(() => import('./pages/members/MembersPage.jsx'), 'MembersPage');
 const NotFoundPage = lazyNamedPage(() => import('./pages/error/NotFoundPage.jsx'), 'NotFoundPage');
+const NotificationsPage = lazyNamedPage(() => import('./pages/notifications/NotificationsPage.jsx'), 'NotificationsPage');
 const OrgSettingsPage = lazyNamedPage(() => import('./pages/settings/OrgSettingsPage.jsx'), 'OrgSettingsPage');
 const RegisterPage = lazyNamedPage(() => import('./pages/AuthPages.jsx'), 'RegisterPage');
 const SuperAdminDashboardPage = lazyNamedPage(
@@ -60,6 +62,7 @@ const AppRoutes = () => (
         <Route element={<OrgLayout />}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<DashboardPage />} />
+          <Route path="notifications" element={<NotificationsPage />} />
           <Route
             path="members"
             element={
