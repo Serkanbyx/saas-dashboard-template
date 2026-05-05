@@ -55,6 +55,7 @@ const Avatar = ({ user }) => {
 export const MembersTable = ({
   actionMembershipId,
   currentUser,
+  focusedMembershipId = '',
   isLoading = false,
   members = [],
   onRemove,
@@ -129,9 +130,16 @@ export const MembersTable = ({
                   const isOwner = membership.role === 'owner';
                   const disableActions = isSelf || isOwner || (!canUpdateMembers && !canRemoveMembers);
                   const isBusy = actionMembershipId === membershipId;
+                  const isFocused = focusedMembershipId === membershipId;
 
                   return (
-                    <tr key={membershipId} className="bg-white transition hover:bg-gray-50 dark:bg-slate-900 dark:hover:bg-slate-800/70">
+                    <tr
+                      key={membershipId}
+                      id={`member-${membershipId}`}
+                      className={`bg-white transition hover:bg-gray-50 dark:bg-slate-900 dark:hover:bg-slate-800/70 ${
+                        isFocused ? 'ring-4 ring-inset ring-brand-100 dark:ring-cyan-950/70' : ''
+                      }`}
+                    >
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
                           <Avatar user={user} />

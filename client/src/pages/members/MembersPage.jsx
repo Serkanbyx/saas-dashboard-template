@@ -122,7 +122,7 @@ const InviteMemberModal = ({ isSubmitting, onClose, onSubmit }) => {
   );
 };
 
-const PendingInvitationsTable = ({ actionInvitationId, canManageInvitations, invitations, onResend, onRevoke }) => {
+const PendingInvitationsTable = ({ actionInvitationId, canManageInvitations, focusedInvitationId = '', invitations, onResend, onRevoke }) => {
   if (invitations.length === 0) {
     return <EmptyState>No pending invitations.</EmptyState>;
   }
@@ -157,9 +157,16 @@ const PendingInvitationsTable = ({ actionInvitationId, canManageInvitations, inv
             {invitations.map((invitation) => {
               const invitationId = getRecordId(invitation);
               const isBusy = actionInvitationId === invitationId;
+              const isFocused = focusedInvitationId === invitationId;
 
               return (
-                <tr key={invitationId} className="bg-white transition hover:bg-gray-50 dark:bg-slate-900 dark:hover:bg-slate-800/70">
+                <tr
+                  key={invitationId}
+                  id={`invitation-${invitationId}`}
+                  className={`bg-white transition hover:bg-gray-50 dark:bg-slate-900 dark:hover:bg-slate-800/70 ${
+                    isFocused ? 'ring-4 ring-inset ring-brand-100 dark:ring-cyan-950/70' : ''
+                  }`}
+                >
                   <td className="px-5 py-4 font-medium text-gray-950 dark:text-slate-50">{invitation.email}</td>
                   <td className="px-5 py-4">
                     <RoleBadge role={invitation.role} />
@@ -221,6 +228,7 @@ export const MembersPage = () => {
   const canInviteMembers = can('members:invite');
   const canUpdateMembers = can('members:update');
   const canRemoveMembers = can('members:remove');
+  const focusedRecordId = searchParams.get('focus') || '';
 
   const pendingInvitations = useMemo(
     () => (overview?.pendingInvitations || []).filter((invitation) => invitation.status === 'pending'),
@@ -292,6 +300,27 @@ export const MembersPage = () => {
       setIsInviteModalOpen(true);
     }
   }, [canInviteMembers, searchParams]);
+
+  useEffect(() => {
+    const requestedTab = searchParams.get('tab');
+
+    if (requestedTab === 'pending' || requestedTab === 'invitations') {
+      setActiveTab('invitations');
+    } else if (requestedTab === 'members') {
+      setActiveTab('members');
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!focusedRecordId || isLoadingMembers || isLoadingOverview) {
+      return;
+    }
+
+    const elementPrefix = activeTab === 'invitations' ? 'invitation' : 'member';
+    window.setTimeout(() => {
+      document.getElementById(`${elementPrefix}-${focusedRecordId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 0);
+  }, [activeTab, focusedRecordId, isLoadingMembers, isLoadingOverview]);
 
   const closeInviteModal = () => {
     setIsInviteModalOpen(false);
@@ -486,6 +515,7 @@ export const MembersPage = () => {
         <MembersTable
           actionMembershipId={actionMembershipId}
           currentUser={user}
+          focusedMembershipId={activeTab === 'members' ? focusedRecordId : ''}
           isLoading={isLoadingMembers}
           members={members}
           onRemove={handleRemoveMember}
@@ -499,6 +529,7 @@ export const MembersPage = () => {
         <PendingInvitationsTable
           actionInvitationId={actionInvitationId}
           canManageInvitations={canInviteMembers}
+          focusedInvitationId={activeTab === 'invitations' ? focusedRecordId : ''}
           invitations={pendingInvitations}
           onResend={handleResendInvitation}
           onRevoke={handleRevokeInvitation}

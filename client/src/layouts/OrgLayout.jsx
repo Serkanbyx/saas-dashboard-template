@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
+import { CommandPalette } from '../components/layout/CommandPalette';
 import { Sidebar } from '../components/layout/Sidebar';
 import { Topbar } from '../components/layout/Topbar';
 import { OnboardingWizard } from '../components/onboarding/OnboardingWizard';
@@ -31,6 +32,7 @@ export const OrgLayout = () => {
           </div>
         </main>
       </div>
+      <CommandPalette />
       {showOnboarding ? <OnboardingWizard onCompleted={() => setIsOnboardingDismissed(true)} /> : null}
     </div>
   );

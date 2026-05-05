@@ -1,5 +1,6 @@
 import { Activity, CalendarDays, Filter, Loader2, RefreshCw, Sparkles, UserCircle, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useOrg } from '../../hooks/useOrg';
 import { useSocket } from '../../hooks/useSocket';
 import * as activityService from '../../services/activityService';
@@ -258,6 +259,7 @@ const ActivityTimeline = ({ activities, highlightedIds }) => {
               return (
                 <li
                   key={activityId}
+                  id={`activity-${activityId}`}
                   className={`relative rounded-3xl border bg-white p-5 shadow-sm transition duration-700 dark:bg-slate-900 ${
                     isHighlighted
                       ? 'border-brand-300 ring-4 ring-brand-100 dark:border-cyan-500 dark:ring-cyan-950/70'
@@ -283,9 +285,11 @@ const ActivityTimeline = ({ activities, highlightedIds }) => {
 };
 
 export const ActivityPage = () => {
+  const [searchParams] = useSearchParams();
   const { activeOrg } = useOrg() || {};
   const { socket } = useSocket() || {};
   const activeOrgId = getRecordId(activeOrg);
+  const focusedActivityId = searchParams.get('focus') || '';
   const [activities, setActivities] = useState([]);
   const [members, setMembers] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, total: 0, totalPages: 1 });
@@ -296,6 +300,10 @@ export const ActivityPage = () => {
   const [highlightedIds, setHighlightedIds] = useState([]);
 
   const hasMore = pagination.page < pagination.totalPages;
+  const visibleHighlightedIds = useMemo(
+    () => (focusedActivityId ? [...new Set([...highlightedIds, focusedActivityId])] : highlightedIds),
+    [focusedActivityId, highlightedIds],
+  );
 
   const requestParams = useMemo(
     () => ({
@@ -396,6 +404,16 @@ export const ActivityPage = () => {
     };
   }, [filters, socket]);
 
+  useEffect(() => {
+    if (!focusedActivityId || isLoading) {
+      return;
+    }
+
+    window.setTimeout(() => {
+      document.getElementById(`activity-${focusedActivityId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 0);
+  }, [focusedActivityId, isLoading]);
+
   const handleFilterChange = (name, value) => {
     setFilters((currentFilters) => ({ ...currentFilters, [name]: value }));
   };
@@ -454,7 +472,7 @@ export const ActivityPage = () => {
         <ActivitySkeleton />
       ) : activities.length > 0 ? (
         <>
-          <ActivityTimeline activities={activities} highlightedIds={highlightedIds} />
+          <ActivityTimeline activities={activities} highlightedIds={visibleHighlightedIds} />
           {hasMore ? (
             <div className="flex justify-center">
               <button
