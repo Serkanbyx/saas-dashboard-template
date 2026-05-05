@@ -1,44 +1,104 @@
-﻿import { Toaster } from 'react-hot-toast';
+﻿import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
-import { ThemeToggle } from './components/common/ThemeToggle';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { OrgProvider } from './context/OrgContext';
 import { SocketProvider } from './context/SocketContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { AdminLayout, AuthLayout, OrgLayout } from './layouts';
+import {
+  AcceptInvitePage,
+  AccountSettingsPage,
+  ActivityPage,
+  AllOrgsPage,
+  AllUsersPage,
+  BillingPage,
+  CreateOrgPage,
+  DashboardPage,
+  LoginPage,
+  MembersPage,
+  NotFoundPage,
+  OrgSettingsPage,
+  RegisterPage,
+  SuperAdminDashboardPage,
+} from './pages';
+import { GuestOnlyRoute, OrgRoleRoute, ProtectedRoute, SuperAdminRoute } from './routes';
 
-const AppShell = () => (
-  <main className="min-h-screen bg-gray-50 px-6 py-10 text-gray-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
-    <section className="mx-auto max-w-4xl rounded-2xl border border-gray-200 bg-white p-8 shadow-xl transition-colors dark:border-slate-800 dark:bg-slate-900/80">
-      <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-brand-600 dark:text-cyan-300">SaaS Dashboard</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight">Project scaffold is ready.</h1>
-        </div>
-        <ThemeToggle />
-      </div>
-      <p className="mt-4 max-w-2xl text-gray-600 dark:text-slate-300">
-        The application shell will be implemented step by step from the project guide.
-      </p>
-    </section>
-  </main>
+const AppRoutes = () => (
+  <Routes>
+    <Route element={<GuestOnlyRoute />}>
+      <Route element={<AuthLayout />}>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+      </Route>
+    </Route>
+
+    <Route path="/invite/accept" element={<AuthLayout />}>
+      <Route index element={<AcceptInvitePage />} />
+    </Route>
+
+    <Route element={<ProtectedRoute />}>
+      <Route element={<AuthLayout />}>
+        <Route path="/create-org" element={<CreateOrgPage />} />
+      </Route>
+    </Route>
+
+    <Route path="/app" element={<ProtectedRoute requireOrg />}>
+      <Route element={<OrgLayout />}>
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<DashboardPage />} />
+        <Route
+          path="members"
+          element={
+            <OrgRoleRoute roles={['owner', 'admin', 'member']}>
+              <MembersPage />
+            </OrgRoleRoute>
+          }
+        />
+        <Route path="activity" element={<ActivityPage />} />
+        <Route
+          path="billing"
+          element={
+            <OrgRoleRoute roles={['owner']}>
+              <BillingPage />
+            </OrgRoleRoute>
+          }
+        />
+        <Route path="settings" element={<OrgSettingsPage />} />
+        <Route path="account" element={<AccountSettingsPage />} />
+      </Route>
+    </Route>
+
+    <Route path="/super-admin" element={<SuperAdminRoute />}>
+      <Route element={<AdminLayout />}>
+        <Route index element={<SuperAdminDashboardPage />} />
+        <Route path="orgs" element={<AllOrgsPage />} />
+        <Route path="users" element={<AllUsersPage />} />
+      </Route>
+    </Route>
+
+    <Route path="*" element={<NotFoundPage />} />
+  </Routes>
 );
 
 const App = () => {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <OrgProvider>
-          <SocketProvider>
-            <NotificationProvider>
-              <Toaster position="top-right" />
-              <ErrorBoundary>
-                <AppShell />
-              </ErrorBoundary>
-            </NotificationProvider>
-          </SocketProvider>
-        </OrgProvider>
-      </AuthProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <OrgProvider>
+            <SocketProvider>
+              <NotificationProvider>
+                <Toaster position="top-right" />
+                <ErrorBoundary>
+                  <AppRoutes />
+                </ErrorBoundary>
+              </NotificationProvider>
+            </SocketProvider>
+          </OrgProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </ThemeProvider>
   );
 };

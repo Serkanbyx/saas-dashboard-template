@@ -8,10 +8,24 @@ const ROLE_ORDER = {
 };
 
 const PERMISSIONS = {
-  'activity.view': ['owner', 'admin', 'member'],
-  'billing.view': ['owner'],
-  'members.view': ['owner', 'admin', 'member'],
-  'settings.manage': ['owner', 'admin'],
+  'org:read': ['owner', 'admin', 'member'],
+  'org:update': ['owner', 'admin'],
+  'org:delete': ['owner'],
+  'org:billing': ['owner'],
+  'members:read': ['owner', 'admin', 'member'],
+  'members:invite': ['owner', 'admin'],
+  'members:update': ['owner', 'admin'],
+  'members:remove': ['owner', 'admin'],
+  'activity:read': ['owner', 'admin', 'member'],
+  'notifications:read': ['owner', 'admin', 'member'],
+  'search:read': ['owner', 'admin', 'member'],
+};
+
+const PERMISSION_ALIASES = {
+  'activity.view': 'activity:read',
+  'billing.view': 'org:billing',
+  'members.view': 'members:read',
+  'settings.manage': 'org:update',
 };
 
 export const getMembershipRole = (membership) => membership?.role || 'member';
@@ -24,7 +38,8 @@ export const hasMinimumRole = (membership, requiredRole) => {
 };
 
 export const can = (membership, permission) => {
-  const allowedRoles = PERMISSIONS[permission];
+  const permissionKey = PERMISSION_ALIASES[permission] || permission;
+  const allowedRoles = PERMISSIONS[permissionKey];
 
   if (!allowedRoles) {
     return false;

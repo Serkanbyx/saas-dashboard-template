@@ -53,10 +53,6 @@ export const OrgProvider = ({ children }) => {
       setOrgs(organizations);
       applyActiveOrg(organizations);
 
-      if (organizations.length === 0 && window.location.pathname !== '/create-org') {
-        window.location.assign('/create-org');
-      }
-
       return organizations;
     } finally {
       setLoading(false);
