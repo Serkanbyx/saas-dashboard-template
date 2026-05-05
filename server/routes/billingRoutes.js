@@ -30,7 +30,7 @@ const router = Router();
  *       401:
  *         description: Unauthorized
  */
-router.get('/plan', protect, tenantContext, getCurrentPlan);
+router.get('/plan', protect, tenantContext, requirePermission('org:billing'), getCurrentPlan);
 
 /**
  * @openapi

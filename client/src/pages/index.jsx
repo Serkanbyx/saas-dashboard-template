@@ -4,11 +4,11 @@ import { Activity as ActivityIcon, DollarSign, TrendingUp, UserPlus, Users } fro
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { useAuth } from '../hooks/useAuth';
 import { useOrg } from '../hooks/useOrg';
-import * as billingService from '../services/billingService';
 import * as dashboardService from '../services/dashboardService';
 import { formatActivity } from '../utils/activityFormatter';
 export { CreateOrgPage, LoginPage, RegisterPage } from './AuthPages';
 export { ActivityPage } from './activity/ActivityPage';
+export { BillingPage } from './billing/BillingPage';
 export { AcceptInvitePage } from './invite/AcceptInvitePage';
 export { MembersPage } from './members/MembersPage';
 
@@ -29,12 +29,6 @@ const DashboardPlaceholder = ({ children, title, description }) => (
     <PageHeader eyebrow="SaaS Dashboard" title={title} description={description} />
     {children}
   </section>
-);
-
-const ContextualNudge = ({ children }) => (
-  <div className="mt-6 rounded-2xl border border-brand-100 bg-brand-50 px-4 py-3 text-sm text-brand-900 dark:border-cyan-900/60 dark:bg-cyan-950/30 dark:text-cyan-100">
-    {children}
-  </div>
 );
 
 const getOrgId = (org) => org?._id || org?.id;
@@ -321,46 +315,6 @@ export const DashboardPage = () => {
         <RecentActivity activities={recentActivity} />
       </div>
     </div>
-  );
-};
-
-export const BillingPage = () => {
-  const { user } = useAuth() || {};
-  const [showUpgradeNudge, setShowUpgradeNudge] = useState(false);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadCurrentPlan = async () => {
-      if (!user?.hasCompletedOnboarding) {
-        setShowUpgradeNudge(false);
-        return;
-      }
-
-      try {
-        const response = await billingService.getCurrentPlan();
-
-        if (isMounted) {
-          setShowUpgradeNudge(response.data?.data?.plan === 'free');
-        }
-      } catch (_error) {
-        if (isMounted) {
-          setShowUpgradeNudge(false);
-        }
-      }
-    };
-
-    loadCurrentPlan();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [user?.hasCompletedOnboarding]);
-
-  return (
-    <DashboardPlaceholder title="Billing" description="Plan details, billing history, and upgrade controls will appear here.">
-      {showUpgradeNudge ? <ContextualNudge>Upgrade to Pro for advanced features.</ContextualNudge> : null}
-    </DashboardPlaceholder>
   );
 };
 
