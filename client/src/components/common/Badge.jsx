@@ -33,7 +33,7 @@ export const RoleBadge = ({ role = 'member' }) => {
 export const PlanBadge = ({ plan = 'free' }) => {
   if (plan === 'pro') {
     return (
-      <Badge className="bg-gradient-to-r from-brand-600 to-cyan-500 text-white ring-brand-300 dark:from-cyan-400 dark:to-brand-500 dark:text-slate-950 dark:ring-cyan-700">
+      <Badge className="bg-linear-to-r from-brand-600 to-cyan-500 text-white ring-brand-300 dark:from-cyan-400 dark:to-brand-500 dark:text-slate-950 dark:ring-cyan-700">
         Pro
       </Badge>
     );

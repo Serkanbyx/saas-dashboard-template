@@ -2,7 +2,7 @@ import { Outlet } from 'react-router-dom';
 
 export const AuthLayout = () => {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-50 via-white to-cyan-50 px-4 py-10 text-gray-900 transition-colors dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 dark:text-slate-100 sm:px-6">
+    <main className="flex min-h-screen items-center justify-center bg-linear-to-br from-brand-50 via-white to-cyan-50 px-4 py-10 text-gray-900 transition-colors dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 dark:text-slate-100 sm:px-6">
       <section className="w-full max-w-md">
         <div className="mb-8 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-600 text-lg font-bold text-white shadow-lg shadow-brand-600/20">
