@@ -6,8 +6,6 @@ import {
 import { protect } from '../middleware/auth.js';
 import { uploadOrgLogo, uploadAvatar } from '../middleware/upload.js';
 import { uploadLimiter } from '../middleware/rateLimiters.js';
-import { requireOrgRole } from '../middleware/rbac.js';
-import { tenantContext } from '../middleware/tenant.js';
 
 const router = Router();
 
@@ -40,9 +38,9 @@ router.post('/avatar', protect, uploadLimiter, uploadAvatar.single('image'), upl
  * @openapi
  * /uploads/org-logo:
  *   post:
- *     summary: Upload a logo image for the current organization
+ *     summary: Upload an organization logo image
  *     tags: [Uploads]
- *     security: [{ bearerAuth: [], orgIdHeader: [] }]
+ *     security: [{ bearerAuth: [] }]
  *     requestBody:
  *       required: true
  *       content:
@@ -63,8 +61,6 @@ router.post('/avatar', protect, uploadLimiter, uploadAvatar.single('image'), upl
 router.post(
   '/org-logo',
   protect,
-  tenantContext,
-  requireOrgRole(['owner', 'admin']),
   uploadLimiter,
   uploadOrgLogo.single('image'),
   uploadOrganizationLogo,

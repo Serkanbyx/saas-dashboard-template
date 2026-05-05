@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+export { CreateOrgPage, LoginPage, RegisterPage } from './AuthPages';
 
 const PageHeader = ({ eyebrow, title, description }) => (
   <div>
@@ -28,39 +29,12 @@ const AuthPlaceholder = ({ title, description, linkLabel, linkTo }) => (
   </div>
 );
 
-export const LoginPage = () => (
-  <AuthPlaceholder
-    title="Login"
-    description="The login form will be added in the auth pages step. Routing and guards are ready now."
-    linkLabel="Create an account"
-    linkTo="/register"
-  />
-);
-
-export const RegisterPage = () => (
-  <AuthPlaceholder
-    title="Register"
-    description="The registration flow will be added in the auth pages step. New users will continue to organization setup."
-    linkLabel="Already have an account?"
-    linkTo="/login"
-  />
-);
-
 export const AcceptInvitePage = () => (
   <AuthPlaceholder
     title="Accept invitation"
     description="Invitation acceptance will be implemented with the invitation flow."
     linkLabel="Go to login"
     linkTo="/login"
-  />
-);
-
-export const CreateOrgPage = () => (
-  <AuthPlaceholder
-    title="Create organization"
-    description="Organization creation will be implemented as a guided setup flow."
-    linkLabel="Go to dashboard"
-    linkTo="/app/dashboard"
   />
 );
 

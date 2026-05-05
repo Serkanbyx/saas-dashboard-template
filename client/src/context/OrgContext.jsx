@@ -59,6 +59,25 @@ export const OrgProvider = ({ children }) => {
     }
   }, [applyActiveOrg, token, user]);
 
+  const createOrg = useCallback(
+    async (payload) => {
+      const response = await organizationService.createOrg(payload);
+      const organization = response.data?.data?.organization;
+
+      if (!organization) {
+        return null;
+      }
+
+      const organizationWithRole = { ...organization, role: 'owner' };
+
+      setOrgs((currentOrgs) => [organizationWithRole, ...currentOrgs]);
+      applyActiveOrg([organizationWithRole], getOrgId(organizationWithRole));
+
+      return organizationWithRole;
+    },
+    [applyActiveOrg],
+  );
+
   const switchOrg = useCallback(
     (orgId) => {
       const nextActiveOrg = orgs.find((organization) => getOrgId(organization) === orgId);
@@ -104,9 +123,10 @@ export const OrgProvider = ({ children }) => {
       loading,
       switchOrg,
       refreshOrgs,
+      createOrg,
       setActiveOrgFirstAvailable,
     }),
-    [activeOrg, currentMembership, loading, orgs, refreshOrgs, setActiveOrgFirstAvailable, switchOrg],
+    [activeOrg, createOrg, currentMembership, loading, orgs, refreshOrgs, setActiveOrgFirstAvailable, switchOrg],
   );
 
   return <OrgContext.Provider value={value}>{children}</OrgContext.Provider>;
