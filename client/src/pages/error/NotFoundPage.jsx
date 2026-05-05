@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { SignatureFooter } from '../../components/common/SignatureFooter';
 import { useAuth } from '../../hooks/useAuth';
 
 const PageHeader = ({ eyebrow, title, description }) => (
@@ -33,6 +34,9 @@ export const NotFoundPage = () => {
         >
           {actionLabel}
         </Link>
+        <div className="mt-8">
+          <SignatureFooter />
+        </div>
       </section>
     </main>
   );

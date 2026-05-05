@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
+import { SignatureFooter } from '../components/common/SignatureFooter';
 import { Sidebar } from '../components/layout/Sidebar';
 import { Topbar } from '../components/layout/Topbar';
 
@@ -22,6 +23,9 @@ export const AdminLayout = () => {
             </ErrorBoundary>
           </div>
         </main>
+        <div className="px-4 pb-6 sm:px-6 lg:px-8">
+          <SignatureFooter />
+        </div>
       </div>
     </div>
   );

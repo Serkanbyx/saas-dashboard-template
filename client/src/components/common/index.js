@@ -9,5 +9,6 @@ export { Input } from './Input';
 export { Modal } from './Modal';
 export { Pagination } from './Pagination';
 export { Select } from './Select';
+export { SignatureFooter } from './SignatureFooter';
 export { Spinner } from './Spinner';
 export { ThemeToggle } from './ThemeToggle';

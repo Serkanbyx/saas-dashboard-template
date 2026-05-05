@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom';
+import { SignatureFooter } from '../components/common/SignatureFooter';
 
 export const AuthLayout = () => {
   return (
@@ -20,6 +21,9 @@ export const AuthLayout = () => {
         <p className="mt-6 text-center text-sm text-gray-500 dark:text-slate-400">
           By continuing, you agree to our terms.
         </p>
+        <div className="mt-4">
+          <SignatureFooter />
+        </div>
       </section>
     </main>
   );

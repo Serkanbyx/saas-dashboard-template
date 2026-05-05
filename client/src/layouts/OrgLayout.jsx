@@ -1,6 +1,7 @@
 import { Suspense, useCallback, useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
+import { SignatureFooter } from '../components/common/SignatureFooter';
 import { Spinner } from '../components/common/Spinner';
 import { Sidebar } from '../components/layout/Sidebar';
 import { Topbar } from '../components/layout/Topbar';
@@ -49,6 +50,9 @@ export const OrgLayout = () => {
             </ErrorBoundary>
           </div>
         </main>
+        <div className="px-4 pb-6 sm:px-6 lg:px-8">
+          <SignatureFooter />
+        </div>
       </div>
       {isSwitchingOrg ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 px-6 backdrop-blur-sm" aria-live="polite" aria-busy="true">
