@@ -55,16 +55,23 @@ export const OrgSwitcher = () => {
         type="button"
         onClick={() => setIsOpen((current) => !current)}
         disabled={isSwitchingOrg}
-        className="flex w-full items-center gap-3 rounded-2xl border border-gray-200 bg-white px-3 py-3 text-left shadow-sm transition hover:border-brand-500 hover:bg-brand-50 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-70 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-brand-500 dark:hover:bg-slate-800"
+        className="flex w-full min-w-0 items-center gap-3 rounded-2xl border border-gray-200 bg-white px-3 py-3 text-left shadow-sm transition hover:border-brand-500 hover:bg-brand-50 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-70 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-brand-500 dark:hover:bg-slate-800"
         aria-expanded={isOpen}
         aria-haspopup="menu"
       >
-        <OrgLogo org={activeOrg} />
-        <span className="min-w-0">
-          <span className="block truncate text-sm font-semibold text-gray-900 dark:text-slate-100">
+        <span className="shrink-0">
+          <OrgLogo org={activeOrg} />
+        </span>
+        <span className="block min-w-0 flex-1 overflow-hidden">
+          <span
+            className="block truncate text-sm font-semibold text-gray-900 dark:text-slate-100"
+            title={activeOrg?.name || ''}
+          >
             {activeOrg?.name || 'Select organization'}
           </span>
-          <span className="block text-xs capitalize text-gray-500 dark:text-slate-400">{activeOrg?.role || 'No role'}</span>
+          <span className="block truncate text-xs capitalize text-gray-500 dark:text-slate-400">
+            {activeOrg?.role || 'No role'}
+          </span>
         </span>
       </button>
 
@@ -85,17 +92,21 @@ export const OrgSwitcher = () => {
                     type="button"
                     onClick={() => handleSwitchOrg(orgId)}
                     disabled={isSwitchingOrg || isActive}
-                    className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm transition hover:bg-gray-50 focus:bg-gray-50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:hover:bg-slate-800 dark:focus:bg-slate-800"
+                    className="flex w-full min-w-0 items-center gap-3 px-3 py-2.5 text-left text-sm transition hover:bg-gray-50 focus:bg-gray-50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:hover:bg-slate-800 dark:focus:bg-slate-800"
                     role="menuitem"
                   >
-                    <OrgLogo org={org} />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate font-medium text-gray-900 dark:text-slate-100">{org.name}</span>
+                    <span className="shrink-0">
+                      <OrgLogo org={org} />
+                    </span>
+                    <span className="block min-w-0 flex-1 overflow-hidden">
+                      <span className="block truncate font-medium text-gray-900 dark:text-slate-100" title={org.name}>
+                        {org.name}
+                      </span>
                       <span className="inline-flex rounded-full bg-gray-100 px-2 py-0.5 text-xs capitalize text-gray-600 dark:bg-slate-800 dark:text-slate-300">
                         {org.role || 'member'}
                       </span>
                     </span>
-                    {isActive ? <Check className="h-4 w-4 text-brand-600" aria-hidden="true" /> : null}
+                    {isActive ? <Check className="h-4 w-4 shrink-0 text-brand-600" aria-hidden="true" /> : null}
                   </button>
                 );
               })

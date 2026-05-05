@@ -97,15 +97,19 @@ const UserMenu = () => {
   const userName = user?.name || user?.email || 'Account';
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900">
-      <div className="flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-sm font-bold text-gray-700 dark:bg-slate-800 dark:text-slate-200">
+    <div className="min-w-0 rounded-2xl border border-gray-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-bold text-gray-700 dark:bg-slate-800 dark:text-slate-200">
           {getUserInitials(user)}
         </span>
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-semibold text-gray-900 dark:text-slate-100">{userName}</span>
-          <span className="block truncate text-xs text-gray-500 dark:text-slate-400">{user?.email || 'Signed in'}</span>
-        </span>
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <p className="truncate text-sm font-semibold text-gray-900 dark:text-slate-100" title={userName}>
+            {userName}
+          </p>
+          <p className="truncate text-xs text-gray-500 dark:text-slate-400" title={user?.email || ''}>
+            {user?.email || 'Signed in'}
+          </p>
+        </div>
       </div>
       <button
         type="button"
