@@ -1,4 +1,10 @@
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useAuth } from '../hooks/useAuth';
+import { useOrg } from '../hooks/useOrg';
+import * as activityService from '../services/activityService';
+import * as billingService from '../services/billingService';
+import * as membershipService from '../services/membershipService';
 export { CreateOrgPage, LoginPage, RegisterPage } from './AuthPages';
 
 const PageHeader = ({ eyebrow, title, description }) => (
@@ -9,10 +15,17 @@ const PageHeader = ({ eyebrow, title, description }) => (
   </div>
 );
 
-const DashboardPlaceholder = ({ title, description }) => (
+const DashboardPlaceholder = ({ children, title, description }) => (
   <section className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm transition-colors dark:border-slate-800 dark:bg-slate-900">
     <PageHeader eyebrow="SaaS Dashboard" title={title} description={description} />
+    {children}
   </section>
+);
+
+const ContextualNudge = ({ children }) => (
+  <div className="mt-6 rounded-2xl border border-brand-100 bg-brand-50 px-4 py-3 text-sm text-brand-900 dark:border-cyan-900/60 dark:bg-cyan-950/30 dark:text-cyan-100">
+    {children}
+  </div>
 );
 
 const AuthPlaceholder = ({ title, description, linkLabel, linkTo }) => (
@@ -42,17 +55,137 @@ export const DashboardPage = () => (
   <DashboardPlaceholder title="Dashboard" description="Workspace analytics and activity summaries will appear here." />
 );
 
-export const MembersPage = () => (
-  <DashboardPlaceholder title="Members" description="Member management, invitations, and role controls will appear here." />
-);
+export const MembersPage = () => {
+  const { user } = useAuth() || {};
+  const { currentMembership } = useOrg() || {};
+  const [showInviteNudge, setShowInviteNudge] = useState(false);
 
-export const ActivityPage = () => (
-  <DashboardPlaceholder title="Activity" description="Organization activity logs and filters will appear here." />
-);
+  useEffect(() => {
+    let isMounted = true;
 
-export const BillingPage = () => (
-  <DashboardPlaceholder title="Billing" description="Plan details, billing history, and upgrade controls will appear here." />
-);
+    const loadMembersOverview = async () => {
+      if (!user?.hasCompletedOnboarding || !['owner', 'admin'].includes(currentMembership?.role)) {
+        setShowInviteNudge(false);
+        return;
+      }
+
+      try {
+        const response = await membershipService.getMembersOverview();
+        const counts = response.data?.data?.counts;
+
+        if (isMounted) {
+          setShowInviteNudge(counts?.total === 1 && counts?.owners === 1 && counts?.pending === 0);
+        }
+      } catch (_error) {
+        if (isMounted) {
+          setShowInviteNudge(false);
+        }
+      }
+    };
+
+    loadMembersOverview();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentMembership?.role, user?.hasCompletedOnboarding]);
+
+  return (
+    <DashboardPlaceholder title="Members" description="Member management, invitations, and role controls will appear here.">
+      {showInviteNudge ? (
+        <ContextualNudge>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <span>Invite your first teammate to start collaborating in this workspace.</span>
+            <Link className="font-semibold text-brand-700 hover:text-brand-800 dark:text-cyan-200" to="/app/members?invite=true">
+              Invite your first teammate
+            </Link>
+          </div>
+        </ContextualNudge>
+      ) : null}
+    </DashboardPlaceholder>
+  );
+};
+
+export const ActivityPage = () => {
+  const { user } = useAuth() || {};
+  const [showEmptyNudge, setShowEmptyNudge] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadActivityPreview = async () => {
+      if (!user?.hasCompletedOnboarding) {
+        setShowEmptyNudge(false);
+        return;
+      }
+
+      try {
+        const response = await activityService.listActivity({ limit: 1 });
+        const total = response.data?.data?.pagination?.total;
+
+        if (isMounted) {
+          setShowEmptyNudge(total === 0);
+        }
+      } catch (_error) {
+        if (isMounted) {
+          setShowEmptyNudge(false);
+        }
+      }
+    };
+
+    loadActivityPreview();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.hasCompletedOnboarding]);
+
+  return (
+    <DashboardPlaceholder title="Activity" description="Organization activity logs and filters will appear here.">
+      {showEmptyNudge ? <ContextualNudge>Activity will appear here as your team works.</ContextualNudge> : null}
+    </DashboardPlaceholder>
+  );
+};
+
+export const BillingPage = () => {
+  const { user } = useAuth() || {};
+  const [showUpgradeNudge, setShowUpgradeNudge] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCurrentPlan = async () => {
+      if (!user?.hasCompletedOnboarding) {
+        setShowUpgradeNudge(false);
+        return;
+      }
+
+      try {
+        const response = await billingService.getCurrentPlan();
+
+        if (isMounted) {
+          setShowUpgradeNudge(response.data?.data?.plan === 'free');
+        }
+      } catch (_error) {
+        if (isMounted) {
+          setShowUpgradeNudge(false);
+        }
+      }
+    };
+
+    loadCurrentPlan();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.hasCompletedOnboarding]);
+
+  return (
+    <DashboardPlaceholder title="Billing" description="Plan details, billing history, and upgrade controls will appear here.">
+      {showUpgradeNudge ? <ContextualNudge>Upgrade to Pro for advanced features.</ContextualNudge> : null}
+    </DashboardPlaceholder>
+  );
+};
 
 export const OrgSettingsPage = () => (
   <DashboardPlaceholder title="Organization settings" description="Workspace profile and organization preferences will appear here." />
