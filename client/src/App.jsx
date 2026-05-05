@@ -34,61 +34,63 @@ const SuperAdminDashboardPage = lazyNamedPage(
 const AppRoutes = () => (
   <Suspense fallback={<RouteLoader label="Loading page" />}>
     <Routes>
-    <Route element={<GuestOnlyRoute />}>
-      <Route element={<AuthLayout />}>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+      <Route path="/" element={<Navigate to="/app/dashboard" replace />} />
+
+      <Route element={<GuestOnlyRoute />}>
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+        </Route>
       </Route>
-    </Route>
 
-    <Route path="/invite/accept" element={<AuthLayout />}>
-      <Route index element={<AcceptInvitePage />} />
-    </Route>
-    <Route path="/invitations/accept" element={<AuthLayout />}>
-      <Route index element={<AcceptInvitePage />} />
-    </Route>
-
-    <Route element={<ProtectedRoute />}>
-      <Route element={<AuthLayout />}>
-        <Route path="/create-org" element={<CreateOrgPage />} />
+      <Route path="/invite/accept" element={<AuthLayout />}>
+        <Route index element={<AcceptInvitePage />} />
       </Route>
-    </Route>
-
-    <Route path="/app" element={<ProtectedRoute requireOrg />}>
-      <Route element={<OrgLayout />}>
-        <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<DashboardPage />} />
-        <Route
-          path="members"
-          element={
-            <OrgRoleRoute roles={['owner', 'admin', 'member']}>
-              <MembersPage />
-            </OrgRoleRoute>
-          }
-        />
-        <Route path="activity" element={<ActivityPage />} />
-        <Route
-          path="billing"
-          element={
-            <OrgRoleRoute roles={['owner']}>
-              <BillingPage />
-            </OrgRoleRoute>
-          }
-        />
-        <Route path="settings" element={<OrgSettingsPage />} />
-        <Route path="account" element={<AccountSettingsPage />} />
+      <Route path="/invitations/accept" element={<AuthLayout />}>
+        <Route index element={<AcceptInvitePage />} />
       </Route>
-    </Route>
 
-    <Route path="/super-admin" element={<SuperAdminRoute />}>
-      <Route element={<AdminLayout />}>
-        <Route index element={<SuperAdminDashboardPage />} />
-        <Route path="orgs" element={<AllOrgsPage />} />
-        <Route path="users" element={<AllUsersPage />} />
+      <Route element={<ProtectedRoute />}>
+        <Route element={<AuthLayout />}>
+          <Route path="/create-org" element={<CreateOrgPage />} />
+        </Route>
       </Route>
-    </Route>
 
-    <Route path="*" element={<NotFoundPage />} />
+      <Route path="/app" element={<ProtectedRoute requireOrg />}>
+        <Route element={<OrgLayout />}>
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<DashboardPage />} />
+          <Route
+            path="members"
+            element={
+              <OrgRoleRoute roles={['owner', 'admin', 'member']}>
+                <MembersPage />
+              </OrgRoleRoute>
+            }
+          />
+          <Route path="activity" element={<ActivityPage />} />
+          <Route
+            path="billing"
+            element={
+              <OrgRoleRoute roles={['owner']}>
+                <BillingPage />
+              </OrgRoleRoute>
+            }
+          />
+          <Route path="settings" element={<OrgSettingsPage />} />
+          <Route path="account" element={<AccountSettingsPage />} />
+        </Route>
+      </Route>
+
+      <Route path="/super-admin" element={<SuperAdminRoute />}>
+        <Route element={<AdminLayout />}>
+          <Route index element={<SuperAdminDashboardPage />} />
+          <Route path="orgs" element={<AllOrgsPage />} />
+          <Route path="users" element={<AllUsersPage />} />
+        </Route>
+      </Route>
+
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   </Suspense>
 );
