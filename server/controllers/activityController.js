@@ -7,11 +7,25 @@ const getPagination = (query) => {
   return { page, limit };
 };
 
+const getQueryList = (value) => {
+  if (!value) {
+    return [];
+  }
+
+  const values = Array.isArray(value) ? value : value.split(',');
+  return values.map((item) => item.trim()).filter(Boolean);
+};
+
 const getActivityFilter = (req) => {
   const filter = { orgId: req.orgId };
+  const actions = getQueryList(req.query.action);
 
-  if (req.query.action) {
-    filter.action = req.query.action;
+  if (actions.length === 1) {
+    filter.action = actions[0];
+  }
+
+  if (actions.length > 1) {
+    filter.action = { $in: actions };
   }
 
   if (req.query.actorId) {
@@ -20,6 +34,22 @@ const getActivityFilter = (req) => {
 
   if (req.query.targetType) {
     filter.targetType = req.query.targetType;
+  }
+
+  if (req.query.startDate || req.query.endDate) {
+    filter.createdAt = {};
+
+    if (req.query.startDate) {
+      const startDate = new Date(req.query.startDate);
+      startDate.setUTCHours(0, 0, 0, 0);
+      filter.createdAt.$gte = startDate;
+    }
+
+    if (req.query.endDate) {
+      const endDate = new Date(req.query.endDate);
+      endDate.setUTCHours(23, 59, 59, 999);
+      filter.createdAt.$lte = endDate;
+    }
   }
 
   return filter;

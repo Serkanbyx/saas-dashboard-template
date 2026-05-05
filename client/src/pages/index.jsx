@@ -4,10 +4,11 @@ import { Activity as ActivityIcon, DollarSign, TrendingUp, UserPlus, Users } fro
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { useAuth } from '../hooks/useAuth';
 import { useOrg } from '../hooks/useOrg';
-import * as activityService from '../services/activityService';
 import * as billingService from '../services/billingService';
 import * as dashboardService from '../services/dashboardService';
+import { formatActivity } from '../utils/activityFormatter';
 export { CreateOrgPage, LoginPage, RegisterPage } from './AuthPages';
+export { ActivityPage } from './activity/ActivityPage';
 export { AcceptInvitePage } from './invite/AcceptInvitePage';
 export { MembersPage } from './members/MembersPage';
 
@@ -79,32 +80,6 @@ const formatPlan = (plan) => {
   }
 
   return plan.charAt(0).toUpperCase() + plan.slice(1);
-};
-
-const formatActionLabel = (action) =>
-  (action || 'activity.updated')
-    .split('.')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).replaceAll('_', ' '))
-    .join(' ');
-
-const formatActivityMessage = (activity) => {
-  const actor = activity?.actorId?.name || activity?.actorId?.email || 'Someone';
-  const labels = {
-    'billing.plan_changed': 'changed the billing plan',
-    'invitation.resent': 'resent an invitation',
-    'invitation.revoked': 'revoked an invitation',
-    'member.invited': 'invited a member',
-    'member.joined': 'joined the workspace',
-    'member.left': 'left the workspace',
-    'member.removed': 'removed a member',
-    'member.role_changed': 'changed a member role',
-    'org.created': 'created the workspace',
-    'org.logo_changed': 'updated the workspace logo',
-    'org.updated': 'updated workspace settings',
-    'ownership.transferred': 'transferred ownership',
-  };
-
-  return `${actor} ${labels[activity?.action] || formatActionLabel(activity?.action).toLowerCase()}`;
 };
 
 const KpiCard = ({ icon: Icon, label, value, trend, isMock }) => (
@@ -184,7 +159,7 @@ const RecentActivity = ({ activities = [] }) => (
               key={activity._id || activity.id}
               className="rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-950"
             >
-              <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{formatActivityMessage(activity)}</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-slate-100">{formatActivity(activity)}</p>
               <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">{formatDateTime(activity.createdAt)}</p>
             </li>
           ))}
@@ -346,47 +321,6 @@ export const DashboardPage = () => {
         <RecentActivity activities={recentActivity} />
       </div>
     </div>
-  );
-};
-
-export const ActivityPage = () => {
-  const { user } = useAuth() || {};
-  const [showEmptyNudge, setShowEmptyNudge] = useState(false);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadActivityPreview = async () => {
-      if (!user?.hasCompletedOnboarding) {
-        setShowEmptyNudge(false);
-        return;
-      }
-
-      try {
-        const response = await activityService.listActivity({ limit: 1 });
-        const total = response.data?.data?.pagination?.total;
-
-        if (isMounted) {
-          setShowEmptyNudge(total === 0);
-        }
-      } catch (_error) {
-        if (isMounted) {
-          setShowEmptyNudge(false);
-        }
-      }
-    };
-
-    loadActivityPreview();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [user?.hasCompletedOnboarding]);
-
-  return (
-    <DashboardPlaceholder title="Activity" description="Organization activity logs and filters will appear here.">
-      {showEmptyNudge ? <ContextualNudge>Activity will appear here as your team works.</ContextualNudge> : null}
-    </DashboardPlaceholder>
   );
 };
 

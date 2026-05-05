@@ -5,10 +5,13 @@ import { emitToOrg } from './socketService.js';
 export const logActivity = async ({ orgId, actorId, action, targetType, targetId, metadata = {} }) => {
   try {
     const log = await ActivityLog.create({ orgId, actorId, action, targetType, targetId, metadata });
+    const populatedLog = await ActivityLog.findById(log._id).populate({ path: 'actorId', select: 'name email avatar' });
+
     if (orgId) {
-      emitToOrg(orgId, 'activity:new', log);
+      emitToOrg(orgId, 'activity:new', populatedLog || log);
     }
-    return log;
+
+    return populatedLog || log;
   } catch (error) {
     logger.error({ err: error, orgId, actorId, action }, 'Activity log failed');
     return null;

@@ -33,7 +33,20 @@ router.get('/stats', protect, tenantContext, requirePermission('activity:read'),
  *     parameters:
  *       - in: query
  *         name: action
+ *         schema:
+ *           oneOf:
+ *             - { type: string }
+ *             - { type: array, items: { type: string } }
+ *         description: Single action, comma-separated actions, or repeated action query params
+ *       - in: query
+ *         name: actorId
  *         schema: { type: string }
+ *       - in: query
+ *         name: startDate
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: endDate
+ *         schema: { type: string, format: date }
  *       - in: query
  *         name: page
  *         schema: { type: integer, minimum: 1 }
