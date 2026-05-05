@@ -1,5 +1,6 @@
 import { Building2, Check, Plus } from 'lucide-react';
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { useOrg } from '../../hooks/useOrg';
 
@@ -29,13 +30,18 @@ const OrgLogo = ({ org }) => {
 
 export const OrgSwitcher = () => {
   const navigate = useNavigate();
-  const { activeOrg, orgs = [], switchOrg } = useOrg() || {};
+  const { activeOrg, isSwitchingOrg, orgs = [], switchOrg } = useOrg() || {};
   const [isOpen, setIsOpen] = useState(false);
   const activeOrgId = getOrgId(activeOrg);
 
-  const handleSwitchOrg = (orgId) => {
-    switchOrg?.(orgId);
+  const handleSwitchOrg = async (orgId) => {
     setIsOpen(false);
+
+    try {
+      await switchOrg?.(orgId);
+    } catch (_error) {
+      toast.error('Organization could not be switched.');
+    }
   };
 
   const handleCreateOrg = () => {
@@ -48,7 +54,8 @@ export const OrgSwitcher = () => {
       <button
         type="button"
         onClick={() => setIsOpen((current) => !current)}
-        className="flex w-full items-center gap-3 rounded-2xl border border-gray-200 bg-white px-3 py-3 text-left shadow-sm transition hover:border-brand-500 hover:bg-brand-50 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-brand-500 dark:hover:bg-slate-800"
+        disabled={isSwitchingOrg}
+        className="flex w-full items-center gap-3 rounded-2xl border border-gray-200 bg-white px-3 py-3 text-left shadow-sm transition hover:border-brand-500 hover:bg-brand-50 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-70 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-brand-500 dark:hover:bg-slate-800"
         aria-expanded={isOpen}
         aria-haspopup="menu"
       >
@@ -77,7 +84,8 @@ export const OrgSwitcher = () => {
                     key={orgId}
                     type="button"
                     onClick={() => handleSwitchOrg(orgId)}
-                    className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm transition hover:bg-gray-50 focus:bg-gray-50 focus:outline-none dark:hover:bg-slate-800 dark:focus:bg-slate-800"
+                    disabled={isSwitchingOrg || isActive}
+                    className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm transition hover:bg-gray-50 focus:bg-gray-50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:hover:bg-slate-800 dark:focus:bg-slate-800"
                     role="menuitem"
                   >
                     <OrgLogo org={org} />

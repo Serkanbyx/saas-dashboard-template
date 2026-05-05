@@ -24,7 +24,7 @@ const getOrgId = (org) => org?._id || org?.id;
 
 export const SocketProvider = ({ children }) => {
   const { token } = useAuth();
-  const { activeOrg } = useOrg();
+  const { activeOrg, refreshOrgs } = useOrg();
   const [socket, setSocket] = useState(null);
   const [connected, setConnected] = useState(false);
   const previousOrgIdRef = useRef(null);
@@ -85,6 +85,22 @@ export const SocketProvider = ({ children }) => {
 
     previousOrgIdRef.current = nextOrgId;
   }, [activeOrgId, socket]);
+
+  useEffect(() => {
+    if (!socket) {
+      return undefined;
+    }
+
+    const handleMembershipUpdated = () => {
+      refreshOrgs?.().catch(() => undefined);
+    };
+
+    socket.on('membership:updated', handleMembershipUpdated);
+
+    return () => {
+      socket.off('membership:updated', handleMembershipUpdated);
+    };
+  }, [refreshOrgs, socket]);
 
   const value = useMemo(
     () => ({

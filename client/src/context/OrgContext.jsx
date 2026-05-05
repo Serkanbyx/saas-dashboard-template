@@ -21,6 +21,7 @@ export const OrgProvider = ({ children }) => {
   const [orgs, setOrgs] = useState([]);
   const [activeOrg, setActiveOrg] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isSwitchingOrg, setIsSwitchingOrg] = useState(false);
 
   const applyActiveOrg = useCallback((organizations, preferredOrgId = getStoredActiveOrgId()) => {
     const nextActiveOrg =
@@ -41,6 +42,7 @@ export const OrgProvider = ({ children }) => {
       setOrgs([]);
       setActiveOrg(null);
       setLoading(false);
+      setIsSwitchingOrg(false);
       return [];
     }
 
@@ -79,7 +81,7 @@ export const OrgProvider = ({ children }) => {
   );
 
   const switchOrg = useCallback(
-    (orgId, organizationList = orgs) => {
+    async (orgId, organizationList = orgs) => {
       const nextActiveOrg = organizationList.find((organization) => getOrgId(organization) === orgId);
 
       if (!nextActiveOrg) {
@@ -89,9 +91,19 @@ export const OrgProvider = ({ children }) => {
       window.localStorage.setItem(ACTIVE_ORG_STORAGE_KEY, orgId);
       setActiveOrg(nextActiveOrg);
 
-      return nextActiveOrg;
+      setIsSwitchingOrg(true);
+
+      try {
+        const response = await organizationService.getMyOrgs();
+        const organizations = response.data?.data?.organizations || [];
+
+        setOrgs(organizations);
+        return applyActiveOrg(organizations, orgId);
+      } finally {
+        setIsSwitchingOrg(false);
+      }
     },
-    [orgs],
+    [applyActiveOrg, orgs],
   );
 
   const replaceOrgLocally = useCallback((organization) => {
@@ -161,6 +173,7 @@ export const OrgProvider = ({ children }) => {
       orgs,
       activeOrg,
       currentMembership,
+      isSwitchingOrg,
       loading,
       switchOrg,
       refreshOrgs,
@@ -173,6 +186,7 @@ export const OrgProvider = ({ children }) => {
       activeOrg,
       createOrg,
       currentMembership,
+      isSwitchingOrg,
       loading,
       orgs,
       refreshOrgs,

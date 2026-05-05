@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Spinner } from '../components/common/Spinner';
 import { useAuth } from '../hooks/useAuth';
 import { useOrg } from '../hooks/useOrg';
 import { ForbiddenPage } from '../pages';
@@ -13,7 +14,7 @@ const getNextRedirect = (location) => {
 export const RouteLoader = ({ label = 'Loading' }) => (
   <main className="flex min-h-screen items-center justify-center bg-gray-50 px-6 py-10 text-gray-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
     <section className="text-center" aria-live="polite" aria-busy="true">
-      <span className="mx-auto block h-10 w-10 animate-spin rounded-full border-4 border-brand-100 border-t-brand-600 dark:border-slate-800 dark:border-t-cyan-300" />
+      <Spinner className="mx-auto" label={label} size="xl" />
       <p className="mt-4 text-sm font-medium text-gray-600 dark:text-slate-300">{label}...</p>
     </section>
   </main>
