@@ -15,13 +15,16 @@ const getStoredActiveOrgId = () => {
 };
 
 const getOrgId = (org) => org?._id || org?.id;
+const getUserId = (user) => user?._id || user?.id;
 
 export const OrgProvider = ({ children }) => {
   const { user, token, loading: authLoading } = useAuth();
+  const userId = getUserId(user);
   const [orgs, setOrgs] = useState([]);
   const [activeOrg, setActiveOrg] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isSwitchingOrg, setIsSwitchingOrg] = useState(false);
+  const [loadedUserId, setLoadedUserId] = useState(null);
 
   const applyActiveOrg = useCallback((organizations, preferredOrgId = getStoredActiveOrgId()) => {
     const nextActiveOrg =
@@ -38,11 +41,12 @@ export const OrgProvider = ({ children }) => {
   }, []);
 
   const refreshOrgs = useCallback(async () => {
-    if (!token || !user) {
+    if (!token || !userId) {
       setOrgs([]);
       setActiveOrg(null);
       setLoading(false);
       setIsSwitchingOrg(false);
+      setLoadedUserId(null);
       return [];
     }
 
@@ -54,12 +58,13 @@ export const OrgProvider = ({ children }) => {
 
       setOrgs(organizations);
       applyActiveOrg(organizations);
+      setLoadedUserId(userId);
 
       return organizations;
     } finally {
       setLoading(false);
     }
-  }, [applyActiveOrg, token, user]);
+  }, [applyActiveOrg, token, userId]);
 
   const createOrg = useCallback(
     async (payload) => {
@@ -74,10 +79,11 @@ export const OrgProvider = ({ children }) => {
 
       setOrgs((currentOrgs) => [organizationWithRole, ...currentOrgs]);
       applyActiveOrg([organizationWithRole], getOrgId(organizationWithRole));
+      setLoadedUserId(userId);
 
       return organizationWithRole;
     },
-    [applyActiveOrg],
+    [applyActiveOrg, userId],
   );
 
   const switchOrg = useCallback(
@@ -169,12 +175,14 @@ export const OrgProvider = ({ children }) => {
       role: activeOrg.role,
     };
   }, [activeOrg]);
+  const hasLoadedOrgs = Boolean(userId && loadedUserId === userId);
 
   const value = useMemo(
     () => ({
       orgs,
       activeOrg,
       currentMembership,
+      hasLoadedOrgs,
       isSwitchingOrg,
       loading,
       switchOrg,
@@ -188,6 +196,7 @@ export const OrgProvider = ({ children }) => {
       activeOrg,
       createOrg,
       currentMembership,
+      hasLoadedOrgs,
       isSwitchingOrg,
       loading,
       orgs,

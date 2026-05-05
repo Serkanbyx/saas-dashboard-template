@@ -23,7 +23,7 @@ export const RouteLoader = ({ label = 'Loading' }) => (
 export const ProtectedRoute = ({ requireOrg = false }) => {
   const location = useLocation();
   const { user, loading: authLoading } = useAuth() || {};
-  const { orgs = [], activeOrg, loading: orgLoading, setActiveOrgFirstAvailable } = useOrg() || {};
+  const { orgs = [], activeOrg, hasLoadedOrgs = false, loading: orgLoading, setActiveOrgFirstAvailable } = useOrg() || {};
 
   useEffect(() => {
     if (!requireOrg || authLoading || orgLoading || activeOrg || orgs.length === 0) {
@@ -45,7 +45,7 @@ export const ProtectedRoute = ({ requireOrg = false }) => {
     return <Outlet />;
   }
 
-  if (orgLoading) {
+  if (orgLoading || !hasLoadedOrgs) {
     return <RouteLoader label="Loading your workspace" />;
   }
 
