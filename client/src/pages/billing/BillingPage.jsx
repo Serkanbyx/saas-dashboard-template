@@ -1,6 +1,7 @@
-import { AlertTriangle, Check, CreditCard, Eye, Loader2, Receipt, RefreshCw, X } from 'lucide-react';
+import { AlertTriangle, Check, CreditCard, Eye, Loader2, Receipt } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
+import { Badge, Button, EmptyState, Modal, PlanBadge, Spinner } from '../../components/common';
 import { useOrg } from '../../hooks/useOrg';
 import * as billingService from '../../services/billingService';
 
@@ -55,17 +56,9 @@ const getOrgId = (org) => org?._id || org?.id;
 
 const StatusBadge = ({ status }) => {
   const normalizedStatus = status || 'pending';
-  const styles = {
-    failed: 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/40 dark:text-red-200 dark:ring-red-900/70',
-    paid: 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-900/70',
-    pending: 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900/70',
-  };
+  const variants = { failed: 'danger', paid: 'success', pending: 'warning' };
 
-  return (
-    <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold capitalize ring-1 ${styles[normalizedStatus] || styles.pending}`}>
-      {normalizedStatus}
-    </span>
-  );
+  return <Badge variant={variants[normalizedStatus] || 'warning'}>{normalizedStatus}</Badge>;
 };
 
 const PageHeader = () => (
@@ -101,10 +94,10 @@ const PlanCard = ({ currentPlan }) => {
             {formatCurrency(currentPlan?.price || 0, currentPlan?.currency || 'USD')} / month
           </p>
         </div>
-        <span className="inline-flex w-fit items-center gap-2 rounded-2xl bg-brand-50 px-3 py-2 text-sm font-semibold text-brand-700 dark:bg-cyan-950/40 dark:text-cyan-200">
-          <CreditCard className="h-4 w-4" aria-hidden="true" />
-          Active
-        </span>
+        <div className="flex w-fit items-center gap-2">
+          <CreditCard className="h-4 w-4 text-brand-600 dark:text-cyan-300" aria-hidden="true" />
+          <PlanBadge plan={currentPlan?.plan} />
+        </div>
       </div>
 
       <div className="mt-6">
@@ -202,7 +195,7 @@ const BillingHistoryTable = ({ billingHistory, isLoading, onViewInvoice, viewing
       </div>
     </div>
 
-    <div className="overflow-x-auto">
+    <div className="hidden overflow-x-auto md:block">
       <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-800">
         <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:bg-slate-950 dark:text-slate-400">
           <tr>
@@ -230,7 +223,7 @@ const BillingHistoryTable = ({ billingHistory, isLoading, onViewInvoice, viewing
           {isLoading ? (
             <tr>
               <td colSpan={6} className="px-5 py-10 text-center text-gray-500 dark:text-slate-400">
-                <Loader2 className="mx-auto h-6 w-6 animate-spin text-brand-600 dark:text-cyan-300" aria-hidden="true" />
+                <Spinner className="mx-auto" label="Loading billing history" />
                 <span className="mt-3 block">Loading billing history...</span>
               </td>
             </tr>
@@ -267,7 +260,7 @@ const BillingHistoryTable = ({ billingHistory, isLoading, onViewInvoice, viewing
                           onClick={() => onViewInvoice(record.invoiceNumber)}
                           className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:border-brand-500 hover:text-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:text-slate-200 dark:hover:border-cyan-400 dark:hover:text-cyan-300"
                         >
-                          {isViewing ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+                          {isViewing ? <Spinner color="current" label="Loading invoice" size="sm" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
                           View
                         </button>
                       </div>
@@ -279,6 +272,49 @@ const BillingHistoryTable = ({ billingHistory, isLoading, onViewInvoice, viewing
         </tbody>
       </table>
     </div>
+    <div className="space-y-3 p-4 md:hidden">
+      {isLoading ? (
+        <div className="rounded-2xl border border-gray-200 px-5 py-8 text-center text-gray-500 dark:border-slate-800 dark:text-slate-400">
+          <Spinner className="mx-auto" label="Loading billing history" />
+          <span className="mt-3 block text-sm">Loading billing history...</span>
+        </div>
+      ) : null}
+
+      {!isLoading && billingHistory.length === 0 ? (
+        <EmptyState icon={Receipt} title="No billing history yet" message="Invoices and plan changes will appear here after billing events are created." />
+      ) : null}
+
+      {!isLoading
+        ? billingHistory.map((record) => {
+            const isViewing = viewingInvoiceNumber === record.invoiceNumber;
+
+            return (
+              <article key={getRecordId(record)} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="truncate text-sm font-semibold text-gray-950 dark:text-slate-50">{record.invoiceNumber}</h3>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">{record.description || 'Plan invoice'}</p>
+                  </div>
+                  <StatusBadge status={record.status} />
+                </div>
+                <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">Date</dt>
+                    <dd className="mt-1 text-gray-700 dark:text-slate-200">{formatDate(record.createdAt)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">Amount</dt>
+                    <dd className="mt-1 text-gray-700 dark:text-slate-200">{formatCurrency(record.amount, record.currency, true)}</dd>
+                  </div>
+                </dl>
+                <Button variant="secondary" className="mt-4 w-full" disabled={isViewing} onClick={() => onViewInvoice(record.invoiceNumber)} isLoading={isViewing} icon={Eye}>
+                  View
+                </Button>
+              </article>
+            );
+          })
+        : null}
+    </div>
   </section>
 );
 
@@ -287,25 +323,9 @@ const PlanChangeModal = ({ currentPlanKey, isSubmitting, onClose, onConfirm, sea
   const hasSeatOverflow = isDowngrade && seatsUsed > selectedPlan.seatLimit;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6" role="dialog" aria-modal="true" aria-labelledby="plan-change-title">
-      <button type="button" className="absolute inset-0 bg-slate-950/60" aria-label="Close plan change modal" onClick={onClose} />
-      <section className="relative w-full max-w-lg rounded-3xl border border-gray-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium uppercase tracking-[0.18em] text-brand-600 dark:text-cyan-300">Confirm</p>
-            <h2 id="plan-change-title" className="mt-3 text-2xl font-semibold tracking-tight text-gray-950 dark:text-slate-50">
-              Switch to {selectedPlan.name}
-            </h2>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-xl p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-            aria-label="Close modal"
-          >
-            <X className="h-5 w-5" aria-hidden="true" />
-          </button>
-        </div>
+    <Modal isOpen onClose={onClose} title={`Switch to ${selectedPlan.name}`}>
+      <div>
+        <p className="text-sm font-medium uppercase tracking-[0.18em] text-brand-600 dark:text-cyan-300">Confirm</p>
 
         <div className="mt-6 rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm dark:border-slate-800 dark:bg-slate-950">
           <dl className="space-y-3">
@@ -346,48 +366,22 @@ const PlanChangeModal = ({ currentPlanKey, isSubmitting, onClose, onConfirm, sea
         ) : null}
 
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
+          <Button variant="secondary" onClick={onClose}>
             Cancel
-          </button>
-          <button
-            type="button"
-            disabled={isSubmitting || hasSeatOverflow}
-            onClick={onConfirm}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-white disabled:cursor-not-allowed disabled:opacity-60 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400 dark:focus:ring-offset-slate-900"
-          >
-            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+          </Button>
+          <Button disabled={isSubmitting || hasSeatOverflow} onClick={onConfirm} isLoading={isSubmitting}>
             Confirm Change
-          </button>
+          </Button>
         </div>
-      </section>
-    </div>
+      </div>
+    </Modal>
   );
 };
 
 const InvoiceModal = ({ invoice, onClose }) => (
-  <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6" role="dialog" aria-modal="true" aria-labelledby="invoice-title">
-    <button type="button" className="absolute inset-0 bg-slate-950/60" aria-label="Close invoice modal" onClick={onClose} />
-    <section className="relative w-full max-w-lg rounded-3xl border border-gray-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-medium uppercase tracking-[0.18em] text-brand-600 dark:text-cyan-300">Invoice</p>
-          <h2 id="invoice-title" className="mt-3 text-2xl font-semibold tracking-tight text-gray-950 dark:text-slate-50">
-            {invoice.invoiceNumber}
-          </h2>
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-xl p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-          aria-label="Close modal"
-        >
-          <X className="h-5 w-5" aria-hidden="true" />
-        </button>
-      </div>
+  <Modal isOpen onClose={onClose} title={invoice.invoiceNumber}>
+    <div>
+      <p className="text-sm font-medium uppercase tracking-[0.18em] text-brand-600 dark:text-cyan-300">Invoice</p>
 
       <dl className="mt-6 space-y-4 rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm dark:border-slate-800 dark:bg-slate-950">
         <div className="flex justify-between gap-4">
@@ -413,8 +407,8 @@ const InvoiceModal = ({ invoice, onClose }) => (
           </dd>
         </div>
       </dl>
-    </section>
-  </div>
+    </div>
+  </Modal>
 );
 
 export const BillingPage = () => {
@@ -548,7 +542,7 @@ export const BillingPage = () => {
 
       {isLoadingPlan ? (
         <section className="rounded-3xl border border-gray-200 bg-white p-10 text-center text-gray-500 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
-          <Loader2 className="mx-auto h-7 w-7 animate-spin text-brand-600 dark:text-cyan-300" aria-hidden="true" />
+          <Spinner className="mx-auto" label="Loading plan details" size="lg" />
           <span className="mt-3 block text-sm">Loading plan details...</span>
         </section>
       ) : (

@@ -2,7 +2,8 @@ import { MailPlus, RefreshCw, Send, Trash2, UserPlus, Users } from 'lucide-react
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { MembersTable, RoleBadge } from '../../components/members/MembersTable';
+import { Button, EmptyState, Input, Modal, RoleBadge, Select } from '../../components/common';
+import { MembersTable } from '../../components/members/MembersTable';
 import { useAuth } from '../../hooks/useAuth';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useOrg } from '../../hooks/useOrg';
@@ -42,12 +43,6 @@ const StatCard = ({ icon: Icon, label, value, children }) => (
   </article>
 );
 
-const EmptyState = ({ children }) => (
-  <div className="rounded-3xl border border-dashed border-gray-200 bg-white px-6 py-12 text-center text-sm text-gray-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
-    {children}
-  </div>
-);
-
 const InviteMemberModal = ({ isSubmitting, onClose, onSubmit }) => {
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('member');
@@ -58,78 +53,57 @@ const InviteMemberModal = ({ isSubmitting, onClose, onSubmit }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6" role="dialog" aria-modal="true" aria-labelledby="invite-member-title">
-      <button type="button" className="absolute inset-0 bg-slate-950/60" aria-label="Close invite modal" onClick={onClose} />
-      <form
-        onSubmit={handleSubmit}
-        className="relative w-full max-w-lg rounded-3xl border border-gray-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900"
-      >
+    <Modal isOpen onClose={onClose} title="Invite Member">
+      <form onSubmit={handleSubmit}>
         <div>
           <p className="text-sm font-medium uppercase tracking-[0.18em] text-brand-600 dark:text-cyan-300">Invite</p>
-          <h2 id="invite-member-title" className="mt-3 text-2xl font-semibold tracking-tight text-gray-950 dark:text-slate-50">
-            Invite Member
-          </h2>
           <p className="mt-2 text-sm leading-6 text-gray-600 dark:text-slate-300">
             Send a workspace invitation. Owner is intentionally excluded from invite roles.
           </p>
         </div>
 
         <div className="mt-6 space-y-4">
-          <label className="block">
-            <span className="text-sm font-medium text-gray-700 dark:text-slate-200">Email</span>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="teammate@example.com"
-              className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-cyan-400 dark:focus:ring-cyan-950"
-            />
-          </label>
+          <Input
+            type="email"
+            label="Email"
+            required
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="teammate@example.com"
+          />
 
-          <label className="block">
-            <span className="text-sm font-medium text-gray-700 dark:text-slate-200">Role</span>
-            <select
-              value={role}
-              onChange={(event) => setRole(event.target.value)}
-              className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-cyan-400 dark:focus:ring-cyan-950"
-            >
-              <option value="member">Member</option>
-              <option value="admin">Admin</option>
-            </select>
-          </label>
+          <Select
+            label="Role"
+            value={role}
+            onChange={(event) => setRole(event.target.value)}
+            options={[
+              { value: 'member', label: 'Member' },
+              { value: 'admin', label: 'Admin' },
+            ]}
+          />
         </div>
 
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
+          <Button variant="secondary" onClick={onClose}>
             Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-white disabled:cursor-not-allowed disabled:opacity-70 dark:focus:ring-offset-slate-900"
-          >
-            {isSubmitting ? <RefreshCw className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Send className="h-4 w-4" aria-hidden="true" />}
+          </Button>
+          <Button type="submit" disabled={isSubmitting} isLoading={isSubmitting} icon={Send}>
             Send Invite
-          </button>
+          </Button>
         </div>
       </form>
-    </div>
+    </Modal>
   );
 };
 
 const PendingInvitationsTable = ({ actionInvitationId, canManageInvitations, focusedInvitationId = '', invitations, onResend, onRevoke }) => {
   if (invitations.length === 0) {
-    return <EmptyState>No pending invitations.</EmptyState>;
+    return <EmptyState icon={MailPlus} title="No pending invitations" message="Invitations that have not been accepted yet will appear here." />;
   }
 
   return (
     <section className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <div className="overflow-x-auto">
+      <div className="hidden overflow-x-auto md:block">
         <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-800">
           <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:bg-slate-950 dark:text-slate-400">
             <tr>
@@ -201,6 +175,63 @@ const PendingInvitationsTable = ({ actionInvitationId, canManageInvitations, foc
             })}
           </tbody>
         </table>
+      </div>
+
+      <div className="space-y-3 p-4 md:hidden">
+        {invitations.map((invitation) => {
+          const invitationId = getRecordId(invitation);
+          const isBusy = actionInvitationId === invitationId;
+          const isFocused = focusedInvitationId === invitationId;
+
+          return (
+            <article
+              key={invitationId}
+              id={`invitation-card-${invitationId}`}
+              className={`rounded-2xl border bg-white p-4 shadow-sm dark:bg-slate-900 ${
+                isFocused ? 'border-brand-300 ring-4 ring-brand-100 dark:border-cyan-500 dark:ring-cyan-950/70' : 'border-gray-200 dark:border-slate-800'
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className="truncate text-sm font-semibold text-gray-950 dark:text-slate-50">{invitation.email}</h3>
+                  <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Invited by {getInviterName(invitation)}</p>
+                </div>
+                <RoleBadge role={invitation.role} />
+              </div>
+              <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">Sent</dt>
+                  <dd className="mt-1 text-gray-700 dark:text-slate-200">{formatDate(invitation.createdAt)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">Expires</dt>
+                  <dd className="mt-1 text-gray-700 dark:text-slate-200">{formatDate(invitation.expiresAt)}</dd>
+                </div>
+              </dl>
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                <Button
+                  variant="secondary"
+                  disabled={!canManageInvitations || isBusy}
+                  onClick={() => onResend(invitation)}
+                  isLoading={isBusy}
+                  icon={RefreshCw}
+                  className="w-full"
+                >
+                  Resend
+                </Button>
+                <Button
+                  variant="secondary"
+                  disabled={!canManageInvitations || isBusy}
+                  onClick={() => onRevoke(invitation)}
+                  icon={Trash2}
+                  className="w-full border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/70 dark:text-red-300 dark:hover:bg-red-950/40"
+                >
+                  Revoke
+                </Button>
+              </div>
+            </article>
+          );
+        })}
       </div>
     </section>
   );

@@ -1,6 +1,7 @@
-import { Activity, CalendarDays, Filter, Loader2, RefreshCw, Sparkles, UserCircle, X } from 'lucide-react';
+import { Activity, CalendarDays, Filter, Loader2, RefreshCw, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { Avatar, EmptyState } from '../../components/common';
 import { useOrg } from '../../hooks/useOrg';
 import { useSocket } from '../../hooks/useSocket';
 import * as activityService from '../../services/activityService';
@@ -72,38 +73,6 @@ const getMemberLabel = (membership) => {
   const user = getMemberUser(membership);
   return user.name || user.email || 'Unknown member';
 };
-
-const Avatar = ({ actor }) => {
-  const name = actor?.name || actor?.email || 'Someone';
-  const initials = name
-    .split(' ')
-    .map((part) => part.charAt(0))
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
-
-  if (actor?.avatar) {
-    return <img src={actor.avatar} alt="" className="h-10 w-10 rounded-2xl object-cover" />;
-  }
-
-  return (
-    <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-50 text-sm font-semibold text-brand-700 dark:bg-cyan-950/50 dark:text-cyan-200">
-      {initials || <UserCircle className="h-5 w-5" aria-hidden="true" />}
-    </span>
-  );
-};
-
-const EmptyState = () => (
-  <div className="rounded-3xl border border-dashed border-gray-200 bg-white px-6 py-14 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900">
-    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-brand-50 text-brand-600 dark:bg-cyan-950/40 dark:text-cyan-300">
-      <Sparkles className="h-8 w-8" aria-hidden="true" />
-    </div>
-    <h2 className="mt-5 text-lg font-semibold text-gray-950 dark:text-slate-50">No activity yet</h2>
-    <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500 dark:text-slate-400">
-      Workspace events will appear here when your team invites members, changes roles, updates billing, or edits organization settings.
-    </p>
-  </div>
-);
 
 const ActivitySkeleton = () => (
   <div className="space-y-3">
@@ -268,7 +237,11 @@ const ActivityTimeline = ({ activities, highlightedIds }) => {
                 >
                   <span className="absolute left-[-1.72rem] top-7 h-3 w-3 rounded-full border-2 border-white bg-brand-500 dark:border-slate-950 dark:bg-cyan-300" />
                   <div className="flex gap-4">
-                    <Avatar actor={actor} />
+                    <Avatar
+                      className="rounded-2xl"
+                      name={actor?.name || actor?.email || 'Someone'}
+                      src={actor?.avatar}
+                    />
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold leading-6 text-gray-950 dark:text-slate-50">{formatActivity(activityLog)}</p>
                       <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">{formatDateTime(activityLog.createdAt)}</p>
@@ -488,7 +461,11 @@ export const ActivityPage = () => {
           ) : null}
         </>
       ) : (
-        <EmptyState />
+        <EmptyState
+          icon={Activity}
+          title="No activity yet"
+          message="Workspace events will appear here when your team invites members, changes roles, updates billing, or edits organization settings."
+        />
       )}
     </div>
   );

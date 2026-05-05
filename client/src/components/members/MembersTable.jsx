@@ -1,10 +1,7 @@
-import { Loader2, MoreHorizontal, Search } from 'lucide-react';
+import { MoreHorizontal, Search } from 'lucide-react';
+import { Avatar, RoleBadge, Spinner } from '../common';
 
-const roleStyles = {
-  owner: 'bg-purple-50 text-purple-700 ring-purple-200 dark:bg-purple-950/40 dark:text-purple-200 dark:ring-purple-900/70',
-  admin: 'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/40 dark:text-blue-200 dark:ring-blue-900/70',
-  member: 'bg-gray-50 text-gray-700 ring-gray-200 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700',
-};
+export { RoleBadge };
 
 const getRecordId = (record) => record?._id || record?.id;
 
@@ -13,14 +10,6 @@ const getUserId = (user) => user?._id || user?.id;
 const getMemberUser = (membership) => membership?.userId || membership?.user || {};
 
 const getDisplayName = (user) => user?.name || user?.email || 'Unknown user';
-
-const getInitials = (user) =>
-  getDisplayName(user)
-    .split(/[\s@.]+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join('');
 
 const formatDate = (value) => {
   if (!value) {
@@ -31,26 +20,6 @@ const formatDate = (value) => {
 };
 
 const formatRole = (role) => (role ? role.charAt(0).toUpperCase() + role.slice(1) : 'Member');
-
-export const RoleBadge = ({ role }) => (
-  <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${roleStyles[role] || roleStyles.member}`}>
-    {formatRole(role)}
-  </span>
-);
-
-const Avatar = ({ user }) => {
-  const name = getDisplayName(user);
-
-  if (user?.avatar) {
-    return <img src={user.avatar} alt={`${name} avatar`} className="h-10 w-10 rounded-full object-cover" />;
-  }
-
-  return (
-    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-sm font-bold text-brand-700 dark:bg-cyan-950/40 dark:text-cyan-200">
-      {getInitials(user) || '?'}
-    </span>
-  );
-};
 
 export const MembersTable = ({
   actionMembershipId,
@@ -83,7 +52,7 @@ export const MembersTable = ({
         </label>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="hidden overflow-x-auto md:block">
         <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-800">
           <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:bg-slate-950 dark:text-slate-400">
             <tr>
@@ -108,7 +77,7 @@ export const MembersTable = ({
             {isLoading ? (
               <tr>
                 <td colSpan={5} className="px-5 py-10 text-center text-gray-500 dark:text-slate-400">
-                  <Loader2 className="mx-auto h-6 w-6 animate-spin text-brand-600 dark:text-cyan-300" aria-hidden="true" />
+                  <Spinner className="mx-auto" label="Loading members" />
                   <span className="mt-3 block">Loading members...</span>
                 </td>
               </tr>
@@ -142,7 +111,7 @@ export const MembersTable = ({
                     >
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <Avatar user={user} />
+                          <Avatar name={getDisplayName(user)} src={user?.avatar} />
                           <div className="min-w-0">
                             <p className="truncate font-semibold text-gray-950 dark:text-slate-50">{getDisplayName(user)}</p>
                             {isSelf ? <p className="text-xs text-brand-600 dark:text-cyan-300">You</p> : null}
@@ -171,7 +140,7 @@ export const MembersTable = ({
                                 }
                               }}
                             >
-                              {isBusy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <MoreHorizontal className="h-4 w-4" aria-hidden="true" />}
+                              {isBusy ? <Spinner color="current" label="Updating member" size="sm" /> : <MoreHorizontal className="h-4 w-4" aria-hidden="true" />}
                             </summary>
                             <div className="absolute right-0 z-20 mt-2 w-44 rounded-2xl border border-gray-200 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-950">
                               <p className="px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">
@@ -206,6 +175,103 @@ export const MembersTable = ({
               : null}
           </tbody>
         </table>
+      </div>
+
+      <div className="space-y-3 p-4 md:hidden">
+        {isLoading ? (
+          <div className="rounded-2xl border border-gray-200 px-5 py-8 text-center text-gray-500 dark:border-slate-800 dark:text-slate-400">
+            <Spinner className="mx-auto" label="Loading members" />
+            <span className="mt-3 block text-sm">Loading members...</span>
+          </div>
+        ) : null}
+
+        {!isLoading && members.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-gray-200 px-5 py-8 text-center text-sm text-gray-500 dark:border-slate-700 dark:text-slate-400">
+            No members found.
+          </div>
+        ) : null}
+
+        {!isLoading
+          ? members.map((membership) => {
+              const membershipId = getRecordId(membership);
+              const user = getMemberUser(membership);
+              const isSelf = getUserId(user) === currentUserId;
+              const isOwner = membership.role === 'owner';
+              const disableActions = isSelf || isOwner || (!canUpdateMembers && !canRemoveMembers);
+              const isBusy = actionMembershipId === membershipId;
+              const isFocused = focusedMembershipId === membershipId;
+
+              return (
+                <article
+                  key={membershipId}
+                  id={`member-card-${membershipId}`}
+                  className={`rounded-2xl border bg-white p-4 shadow-sm dark:bg-slate-900 ${
+                    isFocused ? 'border-brand-300 ring-4 ring-brand-100 dark:border-cyan-500 dark:ring-cyan-950/70' : 'border-gray-200 dark:border-slate-800'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <Avatar name={getDisplayName(user)} src={user?.avatar} />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="truncate text-sm font-semibold text-gray-950 dark:text-slate-50">{getDisplayName(user)}</h3>
+                        {isSelf ? <span className="text-xs font-semibold text-brand-600 dark:text-cyan-300">You</span> : null}
+                      </div>
+                      <p className="mt-1 truncate text-sm text-gray-500 dark:text-slate-400">{user?.email || 'Unknown'}</p>
+                    </div>
+                    <RoleBadge role={membership.role} />
+                  </div>
+
+                  <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <dt className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">Joined</dt>
+                      <dd className="mt-1 text-gray-700 dark:text-slate-200">{formatDate(membership.joinedAt || membership.createdAt)}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500">Actions</dt>
+                      <dd className="mt-1">
+                        <details className="group relative">
+                          <summary
+                            className={`inline-flex list-none items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 marker:hidden focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-slate-700 dark:text-slate-200 ${
+                              disableActions ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                            }`}
+                            onClick={(event) => {
+                              if (disableActions) {
+                                event.preventDefault();
+                              }
+                            }}
+                          >
+                            {isBusy ? <Spinner color="current" label="Updating member" size="sm" /> : <MoreHorizontal className="h-4 w-4" aria-hidden="true" />}
+                            Manage
+                          </summary>
+                          <div className="absolute right-0 z-20 mt-2 w-44 rounded-2xl border border-gray-200 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-950">
+                            {['admin', 'member'].map((role) => (
+                              <button
+                                key={role}
+                                type="button"
+                                disabled={!canUpdateMembers || membership.role === role || isBusy}
+                                onClick={() => onRoleChange(membership, role)}
+                                className="block w-full rounded-xl px-3 py-2 text-left text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-200 dark:hover:bg-slate-800"
+                              >
+                                {formatRole(role)}
+                              </button>
+                            ))}
+                            <button
+                              type="button"
+                              disabled={!canRemoveMembers || isBusy}
+                              onClick={() => onRemove(membership)}
+                              className="mt-1 block w-full rounded-xl px-3 py-2 text-left text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:text-red-300 dark:hover:bg-red-950/40"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </details>
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
+              );
+            })
+          : null}
       </div>
     </section>
   );
