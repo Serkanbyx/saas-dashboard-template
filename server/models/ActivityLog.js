@@ -57,7 +57,6 @@ const activityLogSchema = new mongoose.Schema(
     createdAt: {
       type: Date,
       default: Date.now,
-      index: true,
     },
   },
   {

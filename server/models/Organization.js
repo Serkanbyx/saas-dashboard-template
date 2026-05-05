@@ -39,7 +39,6 @@ const organizationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: [true, 'Organization owner is required'],
-      index: true,
     },
     seatsUsed: {
       type: Number,

@@ -1,12 +1,14 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import env from '../config/env.js';
 import { logger } from '../config/logger.js';
 import { renderEmail } from '../utils/renderEmail.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const previewDir = path.resolve(__dirname, '../tmp/email-previews');
+const clientUrl = env.CLIENT_URL.replace(/\/$/, '');
 
 const sampleTemplates = [
   {
@@ -15,7 +17,7 @@ const sampleTemplates = [
       inviterName: 'Ada Lovelace',
       orgName: 'Acme Analytics',
       role: 'admin',
-      acceptUrl: 'http://localhost:5173/invitations/accept?token=sample-token',
+      acceptUrl: `${clientUrl}/invitations/accept?token=sample-token`,
       expiresAt: 'May 10, 2026, 11:00 PM',
     },
   },
@@ -24,7 +26,7 @@ const sampleTemplates = [
     variables: {
       name: 'Grace Hopper',
       orgName: 'Acme Analytics',
-      dashboardUrl: 'http://localhost:5173/dashboard',
+      dashboardUrl: `${clientUrl}/dashboard`,
     },
   },
   {
@@ -33,7 +35,7 @@ const sampleTemplates = [
       name: 'Katherine Johnson',
       orgName: 'Acme Analytics',
       newRole: 'manager',
-      dashboardUrl: 'http://localhost:5173/dashboard',
+      dashboardUrl: `${clientUrl}/dashboard`,
     },
   },
   {
@@ -42,7 +44,7 @@ const sampleTemplates = [
       name: 'Dorothy Vaughan',
       orgName: 'Acme Analytics',
       newPlan: 'Pro',
-      billingUrl: 'http://localhost:5173/billing',
+      billingUrl: `${clientUrl}/billing`,
     },
   },
   {
@@ -51,7 +53,7 @@ const sampleTemplates = [
       ownerName: 'Mary Jackson',
       orgName: 'Acme Analytics',
       reason: 'Payment verification is required.',
-      supportUrl: 'http://localhost:5173/support',
+      supportUrl: `${clientUrl}/support`,
     },
   },
 ];

@@ -8,7 +8,7 @@ Multi-tenant React + Node SaaS starter with organizations, memberships, RBAC, in
 ![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-47A248?logo=mongodb&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38B2AC?logo=tailwind-css&logoColor=white)
 
-<!-- CI badge can be enabled after adding .github/workflows/ci.yml:
+<!-- Enable after publishing by replacing <owner>/<repo>:
 ![CI](https://github.com/<owner>/<repo>/actions/workflows/ci.yml/badge.svg)
 -->
 
@@ -246,7 +246,7 @@ The server test suite uses `mongodb-memory-server`, so it does not need a real t
 
 ## CI/CD
 
-GitHub Actions is optional for this template. If you enable CI later, add `.github/workflows/ci.yml` to run server tests plus client build and tests on every push and pull request. Use placeholder test secrets only, and never print GitHub secrets in logs.
+GitHub Actions runs server tests plus client tests and build on every push or pull request to `main` and `master`. The workflow uses placeholder local test values only and does not require real provider secrets.
 
 ## Security
 

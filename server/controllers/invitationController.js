@@ -369,7 +369,7 @@ export const acceptInvitation = async (req, res, next) => {
           $expr: { $lt: ['$seatsUsed', '$seatLimit'] },
         },
         { $inc: { seatsUsed: 1 } },
-        { new: true, session },
+        { returnDocument: 'after', session },
       );
 
       if (!organization) {

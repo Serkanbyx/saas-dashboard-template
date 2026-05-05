@@ -3098,36 +3098,36 @@ This step is **mandatory** before clicking "Publish repository" in GitHub Deskto
 
 ### Part A — Code quality cleanup
 
-- [ ] All `console.log` statements removed; `logger.*` used throughout
-- [ ] Unused imports removed (`eslint --fix` if ESLint is configured)
-- [ ] All `// TODO` and `// FIXME` comments resolved or moved to GitHub issues (after the repo exists)
-- [ ] No commented-out blocks of code left behind
-- [ ] All toast/error messages in English with consistent voice
-- [ ] All form validation messages user-friendly (no Mongoose error leakage)
-- [ ] No raw error responses leak field names, file paths, or stack traces in production
-- [ ] localStorage keys namespaced (`saas:token`, `saas:activeOrgId`, `saas:theme`, `saas:recentSearches`)
-- [ ] All API error responses use the unified `{ success, message }` shape
-- [ ] No hard-coded URLs in client code (use `import.meta.env.VITE_API_URL`)
-- [ ] No hard-coded URLs in server code (use `env.CLIENT_URL`)
-- [ ] All routes have rate limiters mounted
-- [ ] Mongo indexes are created (rely on Mongoose `autoIndex: true` in dev; `Model.syncIndexes()` for first prod boot)
+- [x] All `console.log` statements removed; `logger.*` used throughout
+- [x] Unused imports removed (`eslint --fix` if ESLint is configured)
+- [x] All `// TODO` and `// FIXME` comments resolved or moved to GitHub issues (after the repo exists)
+- [x] No commented-out blocks of code left behind
+- [x] All toast/error messages in English with consistent voice
+- [x] All form validation messages user-friendly (no Mongoose error leakage)
+- [x] No raw error responses leak field names, file paths, or stack traces in production
+- [x] localStorage keys namespaced (`saas:token`, `saas:activeOrgId`, `saas:theme`, `saas:recentSearches`)
+- [x] All API error responses use the unified `{ success, message }` shape
+- [x] No hard-coded URLs in client code (use `import.meta.env.VITE_API_URL`)
+- [x] No hard-coded URLs in server code (use `env.CLIENT_URL`)
+- [x] All routes have rate limiters mounted
+- [x] Mongo indexes are created (rely on Mongoose `autoIndex: true` in dev; `Model.syncIndexes()` for first prod boot)
 - [ ] Super admin seed has been tested locally
-- [ ] Tests pass (`npm test` in both `server/` and `client/`)
+- [x] Tests pass (`npm test` in both `server/` and `client/`)
 
 ### Part B — Secret hygiene scan (search the repo before every publish)
 
 Run these searches across the entire project tree (`server/` + `client/` + root). **None should return matches in tracked files.**
 
-- [ ] **Mongo connection strings:** search for `mongodb+srv://` and `mongodb://` — should only appear in `.env.example` placeholder
-- [ ] **JWT secrets:** search for any string longer than 32 chars that looks like a hash/secret — only in `.env.example` as obvious placeholder text
-- [ ] **Bearer tokens:** search for `Bearer ey` (start of a JWT) — only in documentation as illustration
-- [ ] **Cloudinary signatures:** search for your real cloud name, real API key, real secret — must not appear anywhere except your local `.env`
-- [ ] **SMTP passwords:** search for your real SMTP user/pass — must not appear in code, tests, or comments
-- [ ] **Email addresses:** search for your personal email — should not appear in seeds, fixtures, README, or comments
-- [ ] **Hardcoded passwords:** search for `password:`, `password =`, `password="`, `pwd:` — flag every match
-- [ ] **API key patterns:** search for `sk_live`, `sk_test`, `pk_live`, `pk_test`, `xoxb-`, `ghp_`, `AKIA` — none in tracked files
-- [ ] **Internal URLs:** search for `localhost:`, `127.0.0.1`, `192.168.`, your Render/Netlify project URLs — only in `.env.example` or documentation
-- [ ] **`process.env` defaults:** grep for `process.env.[A-Z_]+ \|\| ['"]` — every match must use a safe non-secret default
+- [x] **Mongo connection strings:** search for `mongodb+srv://` and `mongodb://` — should only appear in `.env.example` placeholder
+- [x] **JWT secrets:** search for any string longer than 32 chars that looks like a hash/secret — only in `.env.example` as obvious placeholder text
+- [x] **Bearer tokens:** search for `Bearer ey` (start of a JWT) — only in documentation as illustration
+- [x] **Cloudinary signatures:** search for your real cloud name, real API key, real secret — must not appear anywhere except your local `.env`
+- [x] **SMTP passwords:** search for your real SMTP user/pass — must not appear in code, tests, or comments
+- [x] **Email addresses:** search for your personal email — should not appear in seeds, fixtures, README, or comments
+- [x] **Hardcoded passwords:** search for `password:`, `password =`, `password="`, `pwd:` — flag every match
+- [x] **API key patterns:** search for `sk_live`, `sk_test`, `pk_live`, `pk_test`, `xoxb-`, `ghp_`, `AKIA` — none in tracked files
+- [x] **Internal URLs:** search for `localhost:`, `127.0.0.1`, `192.168.`, your Render/Netlify project URLs — only in `.env.example` or documentation
+- [x] **`process.env` defaults:** grep for `process.env.[A-Z_]+ \|\| ['"]` — every match must use a safe non-secret default
 
 ### Part C — Filesystem audit before publishing
 
@@ -3135,20 +3135,20 @@ Before opening GitHub Desktop:
 
 - [ ] GitHub Desktop "Changes" tab does **not** show `.env`, `.env.local`, `.env.production`, or any other env file
 - [ ] `node_modules/` is not listed
-- [ ] `uploads/` is not listed
-- [ ] `dist/` and `build/` directories are not listed
-- [ ] `coverage/` and `.nyc_output/` are not listed
-- [ ] No `*.pem`, `*.key`, `*.crt`, `*.p12` files
-- [ ] No `.DS_Store`, `Thumbs.db` files
-- [ ] No `tmp/email-previews/` or other test artifact folders
-- [ ] No `stats.html` or other bundle-analyzer output
-- [ ] No personal screenshots in `docs/`
+- [x] `uploads/` is not listed
+- [x] `dist/` and `build/` directories are not listed
+- [x] `coverage/` and `.nyc_output/` are not listed
+- [x] No `*.pem`, `*.key`, `*.crt`, `*.p12` files
+- [x] No `.DS_Store`, `Thumbs.db` files
+- [x] No `tmp/email-previews/` or other test artifact folders
+- [x] No `stats.html` or other bundle-analyzer output
+- [x] No personal screenshots in `docs/`
 - [ ] `.env.example` IS staged (this one SHOULD be tracked)
 - [ ] `.gitignore` IS staged
-- [ ] `LICENSE` file exists
-- [ ] `README.md` exists and contains no internal/private info
-- [ ] `.github/workflows/ci.yml` exists and uses no real secrets
-- [ ] `.github/dependabot.yml` exists
+- [x] `LICENSE` file exists
+- [x] `README.md` exists and contains no internal/private info
+- [x] `.github/workflows/ci.yml` exists and uses no real secrets
+- [x] `.github/dependabot.yml` exists
 
 ### Part D — End-to-end functional smoke test
 

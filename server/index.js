@@ -77,7 +77,7 @@ if (docsEnabled) {
 }
 
 app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ success: true, data: { status: 'ok', timestamp: new Date().toISOString() } });
 });
 
 app.use((_req, res) => {
