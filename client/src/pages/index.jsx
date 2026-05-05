@@ -7,9 +7,9 @@ import { useOrg } from '../hooks/useOrg';
 import * as activityService from '../services/activityService';
 import * as billingService from '../services/billingService';
 import * as dashboardService from '../services/dashboardService';
-import * as membershipService from '../services/membershipService';
 export { CreateOrgPage, LoginPage, RegisterPage } from './AuthPages';
 export { AcceptInvitePage } from './invite/AcceptInvitePage';
+export { MembersPage } from './members/MembersPage';
 
 const ActiveUsersChart = lazy(() => import('../components/dashboard/ActiveUsersChart'));
 const GrowthChart = lazy(() => import('../components/dashboard/GrowthChart'));
@@ -346,57 +346,6 @@ export const DashboardPage = () => {
         <RecentActivity activities={recentActivity} />
       </div>
     </div>
-  );
-};
-
-export const MembersPage = () => {
-  const { user } = useAuth() || {};
-  const { currentMembership } = useOrg() || {};
-  const [showInviteNudge, setShowInviteNudge] = useState(false);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadMembersOverview = async () => {
-      if (!user?.hasCompletedOnboarding || !['owner', 'admin'].includes(currentMembership?.role)) {
-        setShowInviteNudge(false);
-        return;
-      }
-
-      try {
-        const response = await membershipService.getMembersOverview();
-        const counts = response.data?.data?.counts;
-
-        if (isMounted) {
-          setShowInviteNudge(counts?.total === 1 && counts?.owners === 1 && counts?.pending === 0);
-        }
-      } catch (_error) {
-        if (isMounted) {
-          setShowInviteNudge(false);
-        }
-      }
-    };
-
-    loadMembersOverview();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [currentMembership?.role, user?.hasCompletedOnboarding]);
-
-  return (
-    <DashboardPlaceholder title="Members" description="Member management, invitations, and role controls will appear here.">
-      {showInviteNudge ? (
-        <ContextualNudge>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <span>Invite your first teammate to start collaborating in this workspace.</span>
-            <Link className="font-semibold text-brand-700 hover:text-brand-800 dark:text-cyan-200" to="/app/members?invite=true">
-              Invite your first teammate
-            </Link>
-          </div>
-        </ContextualNudge>
-      ) : null}
-    </DashboardPlaceholder>
   );
 };
 
