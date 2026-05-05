@@ -128,17 +128,19 @@ const FiltersBar = memo(({ actorId, endDate, members, onActionToggle, onClearFil
               const isSelected = selectedActions.includes(option.value);
 
               return (
-                <label
+                <button
                   key={option.value}
+                  type="button"
+                  aria-pressed={isSelected}
+                  onClick={() => onActionToggle(option.value)}
                   className={`cursor-pointer rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
                     isSelected
                       ? 'border-brand-600 bg-brand-600 text-white dark:border-cyan-400 dark:bg-cyan-400 dark:text-slate-950'
                       : 'border-gray-200 text-gray-600 hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300 dark:hover:border-cyan-700 dark:hover:text-cyan-200'
-                  }`}
+                  } focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-cyan-400 dark:focus:ring-offset-slate-900`}
                 >
-                  <input type="checkbox" checked={isSelected} onChange={() => onActionToggle(option.value)} className="sr-only" />
                   {option.label}
-                </label>
+                </button>
               );
             })}
           </div>

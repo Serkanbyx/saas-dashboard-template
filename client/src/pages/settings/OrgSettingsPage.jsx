@@ -49,7 +49,7 @@ const sectionLinks = [
 ];
 
 const SettingsSection = ({ children, description, icon: Icon, id, title }) => (
-  <section id={id} className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+  <section id={id} className="min-w-0 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
     <div className="flex items-start gap-3">
       <span className="rounded-2xl bg-brand-50 p-3 text-brand-600 dark:bg-cyan-950/40 dark:text-cyan-300">
         <Icon className="h-5 w-5" aria-hidden="true" />
@@ -289,7 +289,7 @@ export const OrgSettingsPage = () => {
         </p>
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
         <aside className="h-fit rounded-3xl border border-gray-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:sticky lg:top-24">
           <nav className="space-y-1" aria-label="Organization settings sections">
             {sectionLinks.map((item) => {
@@ -309,7 +309,7 @@ export const OrgSettingsPage = () => {
           </nav>
         </aside>
 
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           <SettingsSection
             id="general"
             icon={Building2}

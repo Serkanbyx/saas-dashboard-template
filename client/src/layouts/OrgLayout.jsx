@@ -39,10 +39,10 @@ export const OrgLayout = () => {
     <div className="min-h-screen bg-gray-50 text-gray-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
       <Sidebar variant="org" isMobileOpen={isSidebarOpen} onClose={closeSidebar} />
 
-      <div className="lg:pl-60">
+      <div className="min-w-0 lg:pl-60">
         <Topbar onMenuClick={openSidebar} />
-        <main className="px-4 py-6 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-7xl">
+        <main className="min-w-0 px-4 py-6 sm:px-6 lg:px-8">
+          <div className="mx-auto min-w-0 max-w-7xl">
             <ErrorBoundary>
               <Outlet />
             </ErrorBoundary>
