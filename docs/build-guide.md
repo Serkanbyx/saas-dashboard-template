@@ -1,90 +1,116 @@
 # SaaS Dashboard Template — Step-by-Step Build Guide
 
-> **Project Summary:**
-> A production-ready, multi-tenant SaaS starter template where users can create organizations, invite team members via email with UUID tokens, and operate within isolated workspaces. The system enforces a four-tier role hierarchy (Super Admin → Owner → Admin → Member) with strict RBAC, includes a hybrid analytics dashboard (real member/activity data + mock revenue/growth charts via Recharts), Cloudinary-powered logo/avatar uploads, real-time notifications through Socket.io, a mock subscription system (free/pro plans) with billing history, a team activity feed, branded HTML email templates, light/dark theming, a global command-palette search, OpenAPI documentation, structured logging, error boundaries, automated tests, and a CI pipeline. Built on the modern MERN stack (React 19 + Vite, Express 5, Mongoose 9) with deep security hardening — JWT auth, helmet, rate limiting, NoSQL injection protection, mass-assignment guards, and tenant-isolation middleware on every query.
-
-> Each step below is a self-contained prompt. Execute them in order.
-> Stack: React 19 + Vite, Node/Express 5, MongoDB/Mongoose 9, JWT, Nodemailer, Cloudinary, Socket.io, TailwindCSS v4, React Router v7, Recharts, Axios, Pino (logging), swagger-jsdoc, Vitest, Supertest, React Testing Library, GitHub Actions.
+> **Archived: original build playbook.** This guide preserves the original roadmap used to build the SaaS Dashboard Template. The codebase may have evolved since the guide was written, so use this as a making-of playbook and refer to [`../README.md`](../README.md) for current setup, architecture, testing, and deployment notes.
 
 ---
 
-## Public Repository Posture (read first)
+> **Project Summary:**
+> A production-ready, multi-tenant SaaS starter template where users can create organizations, invite team members via email with UUID tokens, and work inside isolated tenant workspaces. The app includes a four-tier role model (Super Admin, Owner, Admin, Member), RBAC, organization-scoped APIs, hybrid dashboard analytics, Cloudinary uploads, Socket.io notifications, mock subscription and billing flows, activity feeds, branded HTML emails, light/dark/system theming, command-palette search, Swagger/OpenAPI docs, structured logging, focused tests, and a GitHub Actions CI pipeline. The stack is React 19 + Vite on the client, Express 5 + Mongoose 9 on the server, MongoDB for persistence, and security layers for JWT auth, Helmet, rate limiting, request validation, NoSQL injection protection, mass-assignment control, and tenant isolation.
 
-This project is intended to be published to a **public GitHub repository** (manually, via GitHub Desktop). Every step below is written with that constraint in mind. The non-negotiable rules:
+Each step below is a self-contained prompt. Execute them in order.
 
-1. **No real secrets in source code, ever.** Not in `.env` (gitignored), not in seed scripts, not in tests, not in comments, not in commit history. The only env file ever pushed to GitHub is `.env.example` with placeholder values.
-2. **No real personal data in seeds, fixtures, or sample data.** Use generic names (`Demo Owner`, `demo@example.com`) — never your own email, your friends' emails, or production-like data.
-3. **No hardcoded URLs, IDs, tokens, or API keys** anywhere in the codebase. Everything sensitive flows through `process.env` (server) or `import.meta.env` (client).
-4. **No internal infrastructure details exposed** in code, comments, or error messages — no internal hostnames, no IP addresses, no Render/Netlify project IDs, no MongoDB Atlas cluster names.
-5. **No commented-out code containing secrets** ("just for testing"). Strip all such blocks before publishing.
-6. **No `console.log` of `req.body`, `req.headers`, `req.user`, tokens, env vars, or password hashes** anywhere in the source.
-7. **No screenshots or media containing real data** in the README or `docs/` folder. Use redacted/demo screenshots only.
-8. **No CI workflow files (`.github/workflows/*.yml`) that print secrets** to logs (e.g. `echo $JWT_SECRET`). Use GitHub Actions secrets and never echo them.
-9. **`.gitignore` is the last line of defense** — but never the first. Treat every file in the repo as if it will be read by adversaries the moment it is published, because it will be (GitHub search indexes public repos within minutes).
-10. **Run a final pre-publish audit** (STEP 44) right before clicking "Publish repository" in GitHub Desktop. Once a secret hits a public repo, **rotate it immediately** — assume it is compromised even if you delete the commit afterward.
-
-These rules are reinforced in every relevant step below and consolidated in the final pre-publish checklist (STEP 44).
+Stack: React 19 + Vite, React Router 7, Tailwind CSS 4, Axios, Recharts, Socket.io Client, Node.js 20+, Express 5, MongoDB/Mongoose 9, JWT, Nodemailer, Cloudinary, Pino, Swagger/OpenAPI, Vitest, Supertest, React Testing Library, GitHub Actions, Render, Netlify.
 
 ---
 
 ## Table of Contents
 
 **PHASE 1 — Backend Foundation**
-- [STEP 1 — Project Scaffolding & Dependency Setup](#step-1--project-scaffolding--dependency-setup)
-- [STEP 2 — Environment Configuration & Database Connection](#step-2--environment-configuration--database-connection)
-- [STEP 3 — User Model, Auth System & Super Admin Seed](#step-3--user-model-auth-system--super-admin-seed)
+- STEP 1 — Project Scaffolding & Dependency Setup
+- STEP 2 — Environment Configuration & Database Connection
+- STEP 3 — User Model, Auth System & Super Admin Seed
 
-**PHASE 2 — Multi-Tenancy & Core Resources**
-- [STEP 4 — Organization Model & Tenant-Isolation Middleware](#step-4--organization-model--tenant-isolation-middleware)
-- [STEP 5 — Membership Model & RBAC Middleware](#step-5--membership-model--rbac-middleware)
-- [STEP 6 — Invitation Model & API](#step-6--invitation-model--api)
-- [STEP 7 — Email Template System (HTML)](#step-7--email-template-system-html)
-- [STEP 8 — Members Management Aggregate API](#step-8--members-management-aggregate-api)
-- [STEP 9 — Cloudinary Upload Integration](#step-9--cloudinary-upload-integration)
-- [STEP 10 — Activity Log Model & Tracking System](#step-10--activity-log-model--tracking-system)
-- [STEP 11 — Mock Billing System & Plan Management](#step-11--mock-billing-system--plan-management)
-- [STEP 12 — Notification Model & Socket.io Real-Time Layer](#step-12--notification-model--socketio-real-time-layer)
-- [STEP 13 — Dashboard Metrics API (Hybrid)](#step-13--dashboard-metrics-api-hybrid)
-- [STEP 14 — Search API & Global Filters](#step-14--search-api--global-filters)
+**PHASE 2 — Backend Resources**
+- STEP 4 — Organization Model & Tenant-Isolation Middleware
+- STEP 5 — Membership Model & RBAC Middleware
+- STEP 6 — Invitation Model & API
+- STEP 7 — Email Template System (HTML)
+- STEP 8 — Members Management Aggregate API
+- STEP 9 — Cloudinary Upload Integration
+- STEP 10 — Activity Log Model & Tracking System
+- STEP 11 — Mock Billing System & Plan Management
+- STEP 12 — Notification Model & Socket.io Real-Time Layer
+- STEP 13 — Dashboard Metrics API (Hybrid)
+- STEP 14 — Search API & Global Filters
+- STEP 15 — Super Admin API
+- STEP 16 — API Documentation (Swagger / OpenAPI)
+- STEP 17 — Logging & Production Observability
+- STEP 18 — Backend Request Validators
+- STEP 19 — Comprehensive Security Audit
 
-**PHASE 3 — Platform, Quality & Security**
-- [STEP 15 — Super Admin API](#step-15--super-admin-api)
-- [STEP 16 — API Documentation (Swagger / OpenAPI)](#step-16--api-documentation-swagger--openapi)
-- [STEP 17 — Logging & Production Observability](#step-17--logging--production-observability)
-- [STEP 18 — Backend Request Validators](#step-18--backend-request-validators)
-- [STEP 19 — Comprehensive Security Audit](#step-19--comprehensive-security-audit)
+**PHASE 3 — Client Foundation**
+- STEP 20 — Client Setup: Vite, Tailwind, Axios, Services
+- STEP 21 — Client State: Contexts (Auth, Org, Socket, Notification)
+- STEP 22 — Theme System (Light / Dark / System)
+- STEP 23 — React Error Boundaries & Global Error UX
+- STEP 24 — Layouts (Auth, Org, Admin)
+- STEP 25 — Routing & Route Guards
 
-**PHASE 4 — Client Foundation**
-- [STEP 20 — Client Setup: Vite, Tailwind, Axios, Services](#step-20--client-setup-vite-tailwind-axios-services)
-- [STEP 21 — Client State: Contexts (Auth, Org, Socket, Notification)](#step-21--client-state-contexts-auth-org-socket-notification)
-- [STEP 22 — Theme System (Light / Dark / System)](#step-22--theme-system-light--dark--system)
-- [STEP 23 — React Error Boundaries & Global Error UX](#step-23--react-error-boundaries--global-error-ux)
-- [STEP 24 — Layouts (Auth, Org, Admin)](#step-24--layouts-auth-org-admin)
-- [STEP 25 — Routing & Route Guards](#step-25--routing--route-guards)
+**PHASE 4 — Client Pages**
+- STEP 26 — Auth Pages & Org Creation Wizard
+- STEP 27 — First-Run Onboarding Flow
+- STEP 28 — Invitation Accept Page
+- STEP 29 — Dashboard Page (KPIs + Recharts)
+- STEP 30 — Members Page
+- STEP 31 — Team Activity Page
+- STEP 32 — Billing & Plan Page
+- STEP 33 — Org Settings Page
+- STEP 34 — Account Settings Page
+- STEP 35 — Notifications UI (Bell + Toast)
+- STEP 36 — Global Search Command Palette
+- STEP 37 — Super Admin Pages
 
-**PHASE 5 — Client Pages**
-- [STEP 26 — Auth Pages & Org Creation Wizard](#step-26--auth-pages--org-creation-wizard)
-- [STEP 27 — First-Run Onboarding Flow](#step-27--first-run-onboarding-flow)
-- [STEP 28 — Invitation Accept Page](#step-28--invitation-accept-page)
-- [STEP 29 — Dashboard Page (KPIs + Recharts)](#step-29--dashboard-page-kpis--recharts)
-- [STEP 30 — Members Page](#step-30--members-page)
-- [STEP 31 — Team Activity Page](#step-31--team-activity-page)
-- [STEP 32 — Billing & Plan Page](#step-32--billing--plan-page)
-- [STEP 33 — Org Settings Page](#step-33--org-settings-page)
-- [STEP 34 — Account Settings Page](#step-34--account-settings-page)
-- [STEP 35 — Notifications UI (Bell + Toast)](#step-35--notifications-ui-bell--toast)
-- [STEP 36 — Global Search Command Palette](#step-36--global-search-command-palette)
-- [STEP 37 — Super Admin Pages](#step-37--super-admin-pages)
+**PHASE 5 — Polish & Deploy**
+- STEP 38 — UX Enhancements & Reusable Components
+- STEP 39 — 404, Route Guards & Org Switcher Refinement
+- STEP 40 — Performance Optimization & Code Splitting
+- STEP 41 — Testing Setup (Vitest + Supertest + RTL)
+- STEP 42 — CI/CD with GitHub Actions
+- STEP 43 — README & Documentation
+- STEP 44 — Code Cleanup & Pre-Publish (Public GitHub) Audit
+- STEP 45 — Deployment (Render + Netlify + Cloudinary)
 
-**PHASE 6 — Polish, Quality & Deploy**
-- [STEP 38 — UX Enhancements & Reusable Components](#step-38--ux-enhancements--reusable-components)
-- [STEP 39 — 404, Route Guards & Org Switcher Refinement](#step-39--404-route-guards--org-switcher-refinement)
-- [STEP 40 — Performance Optimization & Code Splitting](#step-40--performance-optimization--code-splitting)
-- [STEP 41 — Testing Setup (Vitest + Supertest + RTL)](#step-41--testing-setup-vitest--supertest--rtl)
-- [STEP 42 — CI/CD with GitHub Actions](#step-42--cicd-with-github-actions)
-- [STEP 43 — README & Documentation](#step-43--readme--documentation)
-- [STEP 44 — Code Cleanup & Pre-Publish (Public GitHub) Audit](#step-44--code-cleanup--pre-publish-public-github-audit)
-- [STEP 45 — Deployment (Render + Netlify + Cloudinary)](#step-45--deployment-render--netlify--cloudinary)
+**Appendices**
+- Appendix A — Shared Constants & Patterns
+- Appendix B — Public Repository Pre-Flight Checklist
+
+---
+
+## Global Build Rules (apply to EVERY step)
+
+- Do not run `git` commands. Version control is handled manually by the user, usually through GitHub Desktop or another GUI.
+- Do not install unapproved packages. Prefer native platform APIs and the dependencies already listed in `client/package.json` and `server/package.json`.
+- Do not run long-running processes unless explicitly requested. If a dev server is needed, confirm it first.
+- Treat every step as self-contained: verify the relevant files, env variables, validation rules, tests, and acceptance checklist before moving on.
+- Keep all secrets out of source code. Only `.env.example` files may contain placeholder values.
+- Keep function and variable names English, descriptive, and camelCase where JavaScript naming conventions apply.
+- Prioritize tenant isolation, RBAC correctness, validation, accessibility, performance, and production-readiness over cosmetic changes.
+
+---
+
+## Architecture at a Glance
+
+```mermaid
+flowchart LR
+  User[Browser User] --> Client[React 19 + Vite Client]
+  Client -->|Axios + JWT| API[Express 5 API]
+  Client -->|Socket.io Client| Realtime[Socket.io Server]
+  API --> Auth[Auth, RBAC, Tenant Middleware]
+  Auth --> Mongo[(MongoDB / Mongoose)]
+  API --> Mongo
+  API --> Cloudinary[Cloudinary Uploads]
+  API --> SMTP[Nodemailer SMTP Provider]
+  API --> Docs[Swagger / OpenAPI Docs]
+  Realtime --> Notifications[Notification Service]
+  Notifications --> Mongo
+  Admin[Super Admin Area] --> API
+```
+
+The client is a Vite-powered React app with route guards, organization context, theme context, reusable UI components, and API service modules. The server exposes REST endpoints grouped by auth, organizations, memberships, invitations, uploads, activity, billing, notifications, dashboard metrics, search, and super admin operations. MongoDB stores users, organizations, memberships, invitations, billing records, activity logs, and notifications. Tenant-scoped requests carry `x-org-id`, pass through auth and tenant middleware, and enforce permissions before controller logic runs. Socket.io handles real-time notifications, Cloudinary stores avatars and organization logos, Nodemailer sends invitation and system emails, and Swagger documents the API during development.
+
+---
+
+# PHASE 1 — BACKEND FOUNDATION
 
 ---
 
@@ -269,10 +295,8 @@ client/
 │   │   ├── settings/
 │   │   │   ├── OrgSettingsPage.jsx
 │   │   │   └── AccountSettingsPage.jsx
-│   │   ├── superadmin/
-│   │   │   ├── SuperAdminDashboardPage.jsx
-│   │   │   ├── AllOrgsPage.jsx
-│   │   │   └── AllUsersPage.jsx
+│   │   ├── super-admin/
+│   │   │   └── SuperAdminPages.jsx
 │   │   └── NotFoundPage.jsx
 │   ├── routes/
 │   │   ├── ProtectedRoute.jsx
@@ -327,7 +351,7 @@ client/
 | `uuid` | Token generation for invitations |
 | `cloudinary` | Image uploads |
 | `multer` | Multipart parsing |
-| `multer-storage-cloudinary` | Cloudinary storage adapter |
+| `multer` + Cloudinary SDK | Multipart parsing with server-side Cloudinary uploads |
 | `slugify` | Slug generation |
 | `socket.io` | Real-time WebSocket layer |
 | `pino` | Structured logger |
@@ -696,6 +720,10 @@ Run with `npm run seed:admin`.
 - Inactive users (`isActive: false`) are blocked by `protect` middleware.
 - JWT secret length validated at startup (≥ 32 chars in production).
 - Mongoose 9 pre-save hook uses the new `async function()` syntax — no `next` parameter.
+
+---
+
+# PHASE 2 — BACKEND RESOURCES
 
 ---
 
@@ -1876,6 +1904,10 @@ These items are specific to the public-repo posture and must be re-verified befo
 
 ---
 
+# PHASE 3 — CLIENT FOUNDATION
+
+---
+
 ## STEP 20 — Client Setup: Vite, Tailwind, Axios, Services
 
 ### Vite config (`client/vite.config.js`)
@@ -2354,6 +2386,10 @@ export const usePermissions = () => {
 
 ---
 
+# PHASE 4 — CLIENT PAGES
+
+---
+
 ## STEP 26 — Auth Pages & Org Creation Wizard
 
 ### `LoginPage`
@@ -2708,6 +2744,10 @@ Visible only to users with `platformRole === 'superadmin'`. Use `AdminLayout`.
 - Page guarded by `SuperAdminRoute` (client) + `superAdminOnly` (server).
 - All destructive actions require explicit confirmation.
 - Backend enforces self-protection and last-super-admin protection.
+
+---
+
+# PHASE 5 — POLISH & DEPLOY
 
 ---
 
@@ -3291,3 +3331,22 @@ No git commands are executed during development. The repository is published as 
 #### Final note
 
 After confirming all checks, the SaaS Dashboard Template is ready to use as the foundation for any multi-tenant product, or to be packaged as a starter template. Update the README with screenshots of your deployed instance and consider adding a demo video. The template is now production-grade, public-repo safe, and battle-tested across 45 incremental, security-conscious build steps.
+
+---
+
+# Appendix A — Shared Constants & Patterns
+
+Use shared constants for roles, permissions, plans, invitation statuses, notification types, and activity event names. Keep server constants in `server/utils/constants.js` and mirror only the client-safe permission helpers in `client/src/utils/permissions.js` or adjacent UI utilities.
+
+When adding an organization-scoped resource, include an `orgId` field, index it where filtering is common, protect routes with auth + tenant context + RBAC middleware, and keep all queries scoped to the active organization. New client features should go through service modules instead of calling Axios directly from page components.
+
+---
+
+# Appendix B — Public Repository Pre-Flight Checklist
+
+- No real secrets are present in source code, comments, `.env.example`, tests, docs, screenshots, or CI logs.
+- No real personal data appears in seeds, fixtures, examples, or screenshots.
+- `.env`, `.env.*`, build output, logs, local uploads, coverage, and dependency folders remain ignored.
+- Swagger docs are hidden in production unless intentionally enabled with `EXPOSE_DOCS_IN_PROD=true`.
+- Server and client tests pass before publication, and deployment env vars are configured in the hosting providers rather than committed.
+- If any secret was ever exposed in a public repository, rotate it immediately even if the commit is later removed.

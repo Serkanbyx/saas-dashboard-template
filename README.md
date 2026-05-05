@@ -23,6 +23,10 @@ Screenshots can be added under `docs/screenshots/` after the UI is finalized.
 <!-- ./docs/screenshots/members.png -->
 <!-- ./docs/screenshots/billing.png -->
 
+## Build Guide
+
+The archived step-by-step project playbook lives in [`docs/build-guide.md`](docs/build-guide.md). Use the README for current setup and deployment notes, and the build guide as the original implementation roadmap.
+
 ## Features
 
 - Multi-tenant organization model with user memberships.
